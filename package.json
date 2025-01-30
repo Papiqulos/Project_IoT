@@ -8,14 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "node ./node_modules/nodemon/bin/nodemon.js --inspect ./start.mjs",
     "watch": "node ./node_modules/nodemon/bin/nodemon.js ./start.mjs",
-    "start": "npm ./start.mjs"
+    "start": "node ./start.mjs"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Papiqulos/Project_IoT.git"
   },
   "engines": {
-    "node": "16.x"
+    "node": "18.x"
   },
   "keywords": [],
   "author": "",
