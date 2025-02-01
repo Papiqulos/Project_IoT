@@ -1,9 +1,22 @@
 <header>
     <h1>Data Crowd</h1>
     <div class="button-container">
-        <button class="btn">&#8962; Home</button>
-        <button class="btn">Monitoring</button>
-        <button class="btn">Analytics</button>
-        <button class="btn">&#8635;</button>
+    {{#if userId}}
+        
+        {{#if_eq user.role 'business'}}
+            <button class="btn">&#8962; Home</button>
+            <button class="btn">Monitoring</button>
+            <button class="btn">Analytics</button>
+            <button class="btn">&#8635; Exit</button>
+        {{else}}
+            <button class="btn">&#8962; Home</button>
+            <button class="btn">Suggestions</button>
+            <button class="btn">Heatmaps</button>
+            <button class="btn">&#8635; Exit</button>
+        {{/if_eq}}
+    {{else}}
+        <li class="btn"><a href="/login">Log In</a></li>
+        <li class="btn"><a href="/register">Register</a></li>
+    {{/if}}
     </div>
 </header>

@@ -12,3 +12,14 @@ try {
 catch (error) {
     throw Error('Error connecting to the database: ' + error);
 }
+
+
+export let getRoleFromUsername = async function (username){
+    try {
+        const role = await sql.get('SELECT role FROM user WHERE username = ?', username);
+        return role;
+    } 
+    catch (error) {
+        throw Error('Error getting role from username: ' + error);
+    }
+}

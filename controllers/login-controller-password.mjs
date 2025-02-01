@@ -10,7 +10,7 @@ export let showLogInForm = function (req, res) {
 
 //Show the register form
 export let showRegisterForm = function (req, res) {
-    res.render('createAccount', {layout: 'main'});
+    res.render('register', {layout: 'main'});
 
 }
 
@@ -20,7 +20,7 @@ export let doRegister = async function (req, res) {
         const registrationResult = await userModel.registerUser(req.body.fname, req.body.lname, req.body.username, req.body.password, req.body.email);
         if (registrationResult.message) {
             console.log("user already exists");
-            res.render('createAccount', {layout: 'main', message: "user already exists"});
+            res.render('register', {layout: 'main', message: "user already exists"});
         }
         else {
             res.redirect('/login');
@@ -82,7 +82,7 @@ export let checkAuthenticated = function (req, res, next) {
     else {
         //Ο χρήστης δεν έχει ταυτοποιηθεί, αν απλά ζητάει το /login ή το register δίνουμε τον
         //έλεγχο στο επόμενο middleware που έχει οριστεί στον router
-        if ((req.originalUrl === "/login") || (req.originalUrl === "/createAccount")) {
+        if ((req.originalUrl === "/login") || (req.originalUrl === "/register")) {
             next()
         }
         else {

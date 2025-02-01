@@ -22,3 +22,7 @@
   .button-container { margin: 20px; display: flex; justify-content: center; gap: 15px; }
   .btn { padding: 10px 20px; background: black; color: white; border: none; cursor: pointer; }
   .btn:hover { background: #333; }
+
+  .places-list{
+    color: #333;
+  }

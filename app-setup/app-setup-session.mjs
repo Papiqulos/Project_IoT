@@ -8,6 +8,7 @@ let dataCrowdSession
 dataCrowdSession = session({
     name: process.env.SESSION_NAME,
     secret: process.env.SESSION_SECRET,
+    google_api_key: process.env.GOOGLE_API_KEY,
     resave: false,
     saveUninitialized: false,
     cookie: { 

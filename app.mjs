@@ -60,7 +60,6 @@ app.engine('hbs', exphbs.engine({
   }
 }));
 
-
 app.set('view engine', 'hbs');
 
 //Debugging middleware
