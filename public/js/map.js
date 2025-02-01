@@ -1,4 +1,9 @@
-let map, heatmap, service, infoWindow;
+document.addEventListener("GoogleMapsLoaded", function () {
+  console.log("🚀 Google Maps API is ready. Initializing map...");
+  initMap();
+});
+let map, heatmap, service, infoWindow, previousZoom, previousCenter;
+let isDragging = false;
 const center_HMTY = [38.28806669351595, 21.78915113469408];
 let center1 = { lat: center_HMTY[0], lng: center_HMTY[1] };
 let markers = [];
@@ -22,13 +27,37 @@ map = new Map(document.getElementById("map"), {
     mapId: "DEMO_MAP_ID",
 });
 
+previousZoom = map.getZoom();
+previousCenter = map.getCenter();
+
 // Debounced version of nearbySearch
 const debouncedNearbySearch = debounce(() => {
     nearbySearch();
   }, 2000); // Adjust the delay as needed (e.g., 1000ms)
 
-// Listen for the `center_changed` event
+// Listeners for changes in the map viewport
+map.addListener("dragstart", () => {
+  isDragging = true;
+  console.log("dragstart");
+  }
+);
+
+map.addListener("dragend", () => {
+  isDragging = false;
+  console.log("dragend");
+  }
+);
+
+map.addListener("zoom_changed", () => {
+  previousZoom = map.getZoom();
+  console.log("zoom_changed");
+  }
+);
+
 map.addListener("idle", () => {
+  const currentZoom = map.getZoom();  
+  const currentCenter = map.getCenter();
+    if (isDragging && currentZoom != previousZoom) return;
     // Get the new center
     const newCenter = map.getCenter();
     center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
@@ -139,4 +168,6 @@ async function findPlacesByText() {
 }
 
 initMap();
+
+
 
