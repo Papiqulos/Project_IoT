@@ -1,22 +1,33 @@
 <header>
-    <h1>Data Crowd</h1>
+    <h1><a href="/home">Data Crowd</a></h1>
     <div class="button-container">
     {{#if userId}}
         
         {{#if_eq user.role 'business'}}
-            <button class="btn">&#8962; Home</button>
-            <button class="btn">Monitoring</button>
-            <button class="btn">Analytics</button>
-            <button class="btn">&#8635; Exit</button>
-        {{else}}
-            <button class="btn">&#8962; Home</button>
-            <button class="btn">Suggestions</button>
-            <button class="btn">Heatmaps</button>
-            <button class="btn">&#8635; Exit</button>
+            <ul>
+                <li><a href="/home" class="btn">&#8962; Home</a></li>
+                <li><a href="/monitoring" class="btn">Monitoring</a></li>
+                <li><a href="/analytics" class="btn">Analytics</a></li>
+                <li><a href="/logout" class="btn">&#8635; Exit</a></li>
+            </ul>
+        {{/if_eq}}
+
+        {{#if_eq user.role 'admin'}}
+            <li><a href="/home" class="btn">&#8962; Home</a></li>
+            <li><a href="/monitoring" class="btn">Monitoring</a></li>
+            <li><a href="/analytics" class="btn">Analytics</a></li>
+            <li><a href="/suggestions" class="btn">Suggestions</a></li>
+            <li><a href="/heatmaps" class="btn">Heatmaps</a></li>
+            <li><a href="/logout" class="btn">&#8635; Exit</a></li>
+        {{/if_eq}}
+
+        {{#if_eq user.role 'citizen'}}
+            <li><a href="/home" class="btn">&#8962; Home</a></li>
+            <li><a href="/suggestions" class="btn">Suggestions</a></li>
+            <li><a href="/heatmaps" class="btn">Heatmaps</a></li>
+            <li><a href="/logout" class="btn">&#8635; Exit</a></li>
         {{/if_eq}}
     {{else}}
-        <li class="btn"><a href="/login">Log In</a></li>
-        <li class="btn"><a href="/register">Register</a></li>
     {{/if}}
     </div>
 </header>

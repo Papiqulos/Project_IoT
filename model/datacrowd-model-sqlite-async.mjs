@@ -13,7 +13,6 @@ catch (error) {
     throw Error('Error connecting to the database: ' + error);
 }
 
-
 export let getRoleFromUsername = async function (username){
     try {
         const role = await sql.get('SELECT role FROM user WHERE username = ?', username);
@@ -21,5 +20,42 @@ export let getRoleFromUsername = async function (username){
     } 
     catch (error) {
         throw Error('Error getting role from username: ' + error);
+    }
+}
+
+//Create a new user
+export let registerUser = async function (username, password, role) {
+    // ελέγχουμε αν υπάρχει χρήστης με αυτό το username
+    const userId = await getUserByUsername(username);
+
+    //If the user already exists
+    if (userId != undefined) {
+        return { message: "Υπάρχει ήδη χρήστης με αυτό το όνομα" };
+    } 
+    //If the user does not exist
+    else {
+        try {
+            // Hash the password
+            const hashedPassword = await bcrypt.hash(password, 10);
+            
+            // Add to User table
+            const stmt = await sql.prepare('INSERT INTO user VALUES (?, ?, ?)');
+            const info = await stmt.run(username, hashedPassword, role);
+
+            return info.lastID;
+        } 
+        catch (error) {
+            throw error;
+        }
+    }
+}
+
+export let getUserByUsername = async function (username){
+    try {
+        const user = await sql.get('SELECT * FROM user WHERE username = ?', username);
+        return user;
+    } 
+    catch (error) {
+        throw Error('Error getting user by username: ' + error);
     }
 }

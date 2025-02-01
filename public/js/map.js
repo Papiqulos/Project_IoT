@@ -33,7 +33,7 @@ previousCenter = map.getCenter();
 // Debounced version of nearbySearch
 const debouncedNearbySearch = debounce(() => {
     nearbySearch();
-  }, 2000); // Adjust the delay as needed (e.g., 1000ms)
+  }, 500); // Adjust the delay as needed (e.g., 1000ms)
 
 // Listeners for changes in the map viewport
 map.addListener("dragstart", () => {
@@ -44,35 +44,40 @@ map.addListener("dragstart", () => {
 
 map.addListener("dragend", () => {
   isDragging = false;
+  const newCenter = map.getCenter();
+  center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
+  console.log("new center", center1);
+
+
+  // Perform a non-debounced nearby search
+  // nearbySearch();
+
+  // Perform a debounced nearby search
+  debouncedNearbySearch();
   console.log("dragend");
   }
 );
 
 map.addListener("zoom_changed", () => {
   previousZoom = map.getZoom();
+  const newCenter = map.getCenter();
+  center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
+  console.log("new center", center1);
+
+
+  // Perform a non-debounced nearby search
+  // nearbySearch();
+
+  // Perform a debounced nearby search
+  // debouncedNearbySearch();
   console.log("zoom_changed");
   }
 );
 
-map.addListener("idle", () => {
-  const currentZoom = map.getZoom();  
-  const currentCenter = map.getCenter();
-    if (isDragging && currentZoom != previousZoom) return;
-    // Get the new center
-    const newCenter = map.getCenter();
-    center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
-    console.log(center1);
-
-
-    // Perform a non-debounced nearby search
-    // nearbySearch();
-
-    // Perform a debounced nearby search
-    debouncedNearbySearch();
-  });
 
 // findPlaces();
-// nearbySearch();
+// Perform an initial nearby search
+nearbySearch();
 }
 
 async function nearbySearch() {
@@ -88,10 +93,10 @@ async function nearbySearch() {
       fields: ["displayName", "location", "businessStatus", "userRatingCount"],
       locationRestriction: {
         center: center,
-        radius: 500,
+        radius: 700,
       },
       // optional parameters
-      maxResultCount: 3,
+      maxResultCount: 5,
       rankPreference: SearchNearbyRankPreference.POPULARITY,
       language: "en-GR",
       region: "gr",
@@ -101,7 +106,8 @@ async function nearbySearch() {
   
     if (places.length) {
     //   console.log(places);
-  
+      
+      // New bounds to fit all the markers
       const { LatLngBounds } = await google.maps.importLibrary("core");
       const bounds = new LatLngBounds();
 
@@ -125,7 +131,8 @@ async function nearbySearch() {
         // Store the marker for later removal
         window.markers.push(markerView);
       });
-      map.fitBounds(bounds);
+      // Fit the map to the bounds
+      map.fitBounds(bounds); 
     } else {
       console.log("No results");
     }

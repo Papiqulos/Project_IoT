@@ -1,12 +1,22 @@
 
 
 {{#if userId}}
-  <h1>Welcome, {{username}}!</h1>
+  {{#if_eq role 'business'}}
+    <h1>Welcome, {{userId}}!</h1>
 
-  {{> map }}
+    {{> map }}
+  {{else}}
+    <h1>Welcome, {{userId}}!</h1>
+
+    {{> map }}
+  {{/if_eq}}
+  
 
 {{else}}
-  {{> map }}
+  <h1>Welcome to our site!</h1>
+  <p>Please sign in or register to continue.</p>
+  <button onclick="location.href='/login'">Log In</button>
+  <button onclick="location.href='/register'">Register</button>
   
 {{/if}}
 

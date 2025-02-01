@@ -5,7 +5,23 @@ import * as model from '../model/datacrowd-model-sqlite-async.mjs';
 export async function home(req, res, next) {
     try {
         const role = await model.getRoleFromUsername(req.session.loggedUserId);
-        res.render('home', { session: req.session});
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('home', { session: req.session, user: user});
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+export async function checkAdmin(req, res, next) {  
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        if (role.role === 'admin') {
+            next();
+        }
+        else {
+            res.redirect('/home');
+        }
     }
     catch (error) {
         next(error);

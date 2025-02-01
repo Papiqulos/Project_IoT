@@ -17,7 +17,7 @@ export let showRegisterForm = function (req, res) {
 //Register a new user
 export let doRegister = async function (req, res) {
     try {
-        const registrationResult = await userModel.registerUser(req.body.fname, req.body.lname, req.body.username, req.body.password, req.body.email);
+        const registrationResult = await userModel.registerUser(req.body.username, req.body.password, req.body.role);
         if (registrationResult.message) {
             console.log("user already exists");
             res.render('register', {layout: 'main', message: "user already exists"});
@@ -54,7 +54,7 @@ export let doLogin = async function (req, res) {
             console.log("redirecting to " + req.session.previousPage);     
             const redirectTo = req.originalUrl || "/home";
             console.log("redirecting to " + redirectTo);
-            res.redirect(req.session.previousPage);
+            res.redirect("/home");
         }
         else {
             
