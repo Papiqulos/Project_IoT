@@ -8,6 +8,17 @@
   {{else}}
     <h1>Welcome, {{userId}}!</h1>
 
+    <div id="suggestionsForm" style="display:none;">
+      <h2>Where do you want to go?</h2>
+      <input id="place_input" type="text" name="query" placeholder="e.g. Πάρκο Ειρήνης">
+      <select id="results_dropdown">
+      </select>
+      <button id="search_place" type="submit">Search Places</button>
+      <input type="radio" name="travel_mode" value="DRIVING" checked>Driving
+      <input type="radio" name="travel_mode" value="WALKING">Walking
+      <input type="radio" name="travel_mode" value="TRANSIT">Transit
+      <button id="get_directions" type="submit">Get Directions</button>
+    </div>
     {{> map }}
   {{/if_eq}}
   

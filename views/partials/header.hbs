@@ -5,27 +5,27 @@
         
         {{#if_eq user.role 'business'}}
             <ul>
-                <li><a href="/home" class="btn">&#8962; Home</a></li>
-                <li><a href="/monitoring" class="btn">Monitoring</a></li>
-                <li><a href="/analytics" class="btn">Analytics</a></li>
-                <li><a href="/logout" class="btn">&#8635; Exit</a></li>
+                <li><button onclick="location.href='/home'" class="btn">&#8962; Home</button></li>
+                <li><button onclick="location.href='/monitoring'" class="btn">Monitoring</button></li>
+                <li><button onclick="location.href='/analytics'" class="btn">Analytics</button></li>
+                <li><button onclick="location.href='/logout'" class="btn">&#8635; Exit</button></li>
             </ul>
         {{/if_eq}}
 
         {{#if_eq user.role 'admin'}}
-            <li><a href="/home" class="btn">&#8962; Home</a></li>
-            <li><a href="/monitoring" class="btn">Monitoring</a></li>
-            <li><a href="/analytics" class="btn">Analytics</a></li>
-            <li><a href="/suggestions" class="btn">Suggestions</a></li>
-            <li><a href="/heatmaps" class="btn">Heatmaps</a></li>
-            <li><a href="/logout" class="btn">&#8635; Exit</a></li>
+            <li><button onclick="location.href='/home'" class="btn">&#8962; Home</button></li>
+            <li><button onclick="location.href='/monitoring'" class="btn">Monitoring</button></li>
+            <li><button onclick="location.href='/analytics'" class="btn">Analytics</button></li>
+            <li><button id="suggestions_button" class="btn">Suggestions</button></li>
+            <li><button id="heatmaps_button" class="btn">Heatmaps</button></li>
+            <li><button onclick="location.href='/logout'" class="btn">&#8635; Exit</button></li>
         {{/if_eq}}
 
         {{#if_eq user.role 'citizen'}}
-            <li><a href="/home" class="btn">&#8962; Home</a></li>
-            <li><a href="/suggestions" class="btn">Suggestions</a></li>
-            <li><a href="/heatmaps" class="btn">Heatmaps</a></li>
-            <li><a href="/logout" class="btn">&#8635; Exit</a></li>
+            <li><button onclick="location.href='/home'" class="btn">&#8962; Home</button></li>
+            <li><button id="suggestions_button" class="btn">Suggestions</button></li>
+            <li><button id="heatmaps_button" class="btn">Heatmaps</button></li>
+            <li><button onclick="location.href='/logout'" class="btn">&#8635; Exit</button></li>
         {{/if_eq}}
     {{else}}
     {{/if}}
