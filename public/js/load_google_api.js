@@ -1,8 +1,8 @@
 (async function () {
   try {
+    
     const response = await fetch('/api/key'); // Fetch API key from backend
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
     const data = await response.json();
     const apiKey = data.key; // Extract API key
 
@@ -39,6 +39,7 @@
     })({
       key: apiKey, // Dynamically inject API key
       v: "weekly",
+      libraries: "visualization"
     });
 
     console.log("✅ Google Maps API injected dynamically.");
