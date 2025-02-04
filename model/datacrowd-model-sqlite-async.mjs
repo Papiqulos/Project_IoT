@@ -1,6 +1,9 @@
 'use strict';
 import { Database } from 'sqlite-async';
 import bcrypt from 'bcrypt';
+import axios from 'axios';
+import dotenv from 'dotenv'
+dotenv.config()
 
 let sql;
 
@@ -22,6 +25,36 @@ export let getRoleFromUsername = async function (username){
         throw Error('Error getting role from username: ' + error);
     }
 }
+
+export let getAirQualityData = async function (googleApiKey, location) {
+    const lat = parseFloat(location.split(',')[0]);
+    const lng = parseFloat(location.split(',')[1]);
+  
+    try {
+      const response = await axios.post(
+        `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${googleApiKey}`,
+        {
+          location: {
+            latitude: lat, // Latitude from the location
+            longitude: lng, // Longitude from the location
+          },
+        //   extraComputations: ['HEALTH_RECOMMENDATIONS'], // Optional: Add extra computations
+          languageCode: 'en', // Optional: Set the language
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      // Return the API response data
+      return response.data;
+    } catch (error) {
+      // Throw an error if the request fails
+      throw new Error('Error getting air quality data: ' + (error.response?.data || error.message));
+    }
+  };
 
 //Create a new user
 export let registerUser = async function (username, password, role) {

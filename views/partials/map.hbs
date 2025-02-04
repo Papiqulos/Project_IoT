@@ -1,6 +1,38 @@
+<div id="map">
+    
+        <div class="notifications">
+            
+            {{#with airQualityData}}
+                <div class="notification"></div>
+                    {{dateTime}}
+                </div>
+                
+                <div class="notification">
+                    {{regionCode}}
+                </div>  
 
-<div id="map"></div>
-<div id="places-list"></div>
+                <div class="notifications" id="notifications">
+                    {{#each indexes}}
+                        {{#each this}}
+                                <div class="notification">
+                                    {{#if_eq @key 'color'}}
+                                        {{#each this}}
+                                            {{@key}} : {{this}}
+                                        {{/each}}
+                                    {{else}}
+                                        {{@key}} : {{this}}
+                                    {{/if_eq}}
+                                </div>
+                            {{/each}}
+                    {{/each}}
+                </div>
+            {{/with}}
+            
+        </div>
+</div>
+
+
+
 <script src="/js/load_google_api.js"></script>
 <script src="/js/map.js"></script>
         

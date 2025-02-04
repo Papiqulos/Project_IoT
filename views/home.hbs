@@ -3,11 +3,14 @@
 {{#if userId}}
   {{#if_eq role 'business'}}
     <h1>Welcome, {{userId}}!</h1>
-
     {{> map }}
   {{else}}
-    <h1>Welcome, {{userId}}!</h1>
 
+    <div class="greeting">
+      <h1>Welcome, {{userId}}!</h1>
+    </div>
+    
+    {{> user_controls}}
     <div id="suggestionsForm" style="display:none;">
       <h2>Where do you want to go?</h2>
       <input id="place_input" type="text" name="query" placeholder="e.g. Πάρκο Ειρήνης">
@@ -19,15 +22,20 @@
       <input type="radio" name="travel_mode" value="TRANSIT">Transit
       <button id="get_directions" type="submit">Get Directions</button>
     </div>
+
     {{> map }}
   {{/if_eq}}
   
 
 {{else}}
-  <h1>Welcome to our site!</h1>
-  <p>Please sign in or register to continue.</p>
-  <button onclick="location.href='/login'">Log In</button>
-  <button onclick="location.href='/register'">Register</button>
+  <div class="greeting-text">
+    <h1>Welcome to our site!</h1>
+    <p>Please sign in or register to continue.</p>
+  </div>
+  <div class="button-container">
+    <button onclick="location.href='/login'" class="btn">Log In</button>
+    <button onclick="location.href='/register'" class="btn">Register</button>
+  </div>
   
 {{/if}}
 

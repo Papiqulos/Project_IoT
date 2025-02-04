@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
+    <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataCrowd</title>
     <link rel="stylesheet" href="/css/style.css">
     <body>
-
-        {{> header }}           <!-- This is where the header will be injected -->
+        <!-- This is where the header will be injected -->
+        {{> header }}           
         
-        <div class="main-content">
-            {{{ body }}}        <!-- This is where the main content of the page will be injected -->
-            {{> footer}}        <!-- This is where the footer will be injected -->
+        <!-- This is where the main content of the page will be injected -->
+        <div class="main-container">
+            {{{ body }}}        
+                    
         </div>
+        
+        <!-- This is where the footer will be injected -->
+        {{> footer}}            
+
     </body>
 </html>

@@ -1,4 +1,4 @@
-let map, heatmap, service, infoWindow, previousZoom, previousCenter, currentLocation;
+let map, heatmap, service, infoWindow, previousZoom, previousCenter;
 let suggestionsClicked = false;
 let heatmapsClicked = false;
 let isDragging = false;
@@ -25,19 +25,19 @@ async function initMap() {
     mapId: "DEMO_MAP_ID",
   });
 
-  /////////////////////////////////////
-  // Get the user's current location
-  let cr = getCurrentLocation();
-  console.log("currentLocationkhjgf", cr);
-  /////////////////////////////////////
+  // Get the user's current location and store it in a global variable
+  getCurrentLocation(() => {
+    console.log("currentLocation", window.currentLocation);
+  });
 
-  // Get the user's current location
+
   infoWindow = new google.maps.InfoWindow();
 
+  // Create the button to pan to the user's current location
   const locationButton = document.createElement("button");
 
   locationButton.textContent = "Pan to Current Location";
-  locationButton.classList.add("custom-map-control-button");
+  locationButton.classList.add("btn");
   map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
   locationButton.addEventListener("click", () => {
     // Try HTML5 geolocation.
@@ -91,7 +91,7 @@ async function initMap() {
   }
   );
 
-  // Show/hide suggestions form
+  // Show/hide suggestions cotrols
 document.getElementById('suggestions_button').addEventListener('click', function() {
   suggestionsClicked = !suggestionsClicked;
   heatmapsClicked = false;
@@ -175,9 +175,10 @@ document.getElementById('get_directions').addEventListener('click', async functi
   }
 
   // Get directions to the place
+  console.log("Original location", window.currentLocation);
   console.log("selectedDestination_name", selectedDestination.displayName);
   console.log("selectedTravelMode", selectedTravelMode);
-  getDirections(selectedDestination, selectedTravelMode);
+  getDirections(window.currentLocation, selectedDestination, selectedTravelMode);
 });
 
 // Debounce function to limit API requests
@@ -256,7 +257,7 @@ function clearMarkers() {
 }
 
 // Find a place by text (For the time being it searches for "Δένδρα Κουνάβη" and displays the markers on the map)
-async function findPlacesByText(text, results = 5) {
+async function findPlacesByText(text, results = 15) {
     const { Place } = await google.maps.importLibrary("places");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
     const request = {
@@ -294,7 +295,7 @@ async function findPlacesByText(text, results = 5) {
 }
 
 //Get directions from the center of the map to a specific location
-function getDirections(destination, travelMode = "WALKING") {
+function getDirections(origin, destination, travelMode = "WALKING") {
   if (!suggestionsClicked) {return;}
   // Clear any existing directions
   clearDirections();
@@ -305,7 +306,7 @@ function getDirections(destination, travelMode = "WALKING") {
   directionsRenderer.setMap(map);
 
   var request = {
-    origin: window.currentLocation,
+    origin: origin,
     destination: { lat: destination.location.lat(), lng: destination.location.lng() }, 
     travelMode: travelMode,
   };
@@ -327,37 +328,33 @@ function clearDirections() {
 
 
 ///////////////////////////////
-// Get the user's current location
-function getCurrentLocation() {
+// Get the user's current location and store it in a global variable
+function getCurrentLocation(callback) {
   infoWindow = new google.maps.InfoWindow();
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const pos = {
+    navigator.geolocation.getCurrentPosition((position) => {
+        const pos = 
+        {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        currentLocation = pos;
-        window.currentLocation = currentLocation;
-        console.log("currentLocation1", currentLocation);
-        // infoWindow.setPosition(pos);
-        // infoWindow.setContent("Location found.");
-        // infoWindow.open(map);
-        // map.setCenter(pos);
-      },
+        window.currentLocation = pos;
+        callback();
+      }
+      ,
       () => {
         handleLocationError(true, infoWindow, map.getCenter());
       },
     );
-    console.log("currentLocation2", currentLocation);
-    return currentLocation;
   } else {
     // Browser doesn't support Geolocation
     handleLocationError(false, infoWindow, map.getCenter());
+    return 0;
   }
 }
   
 ///////////////////////////////
+
 
 
 

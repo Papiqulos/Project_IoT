@@ -1,0 +1,36 @@
+<div class="controls-container">
+
+    {{#if userId}}
+            
+        {{#if_eq user.role 'business'}}
+            <div class="button-container"></div>
+                <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+                <button onclick="location.href='/monitoring'" class="btn">Monitoring</button>
+                <button onclick="location.href='/analytics'" class="btn">Analytics</button>
+                <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+            </div>
+        {{/if_eq}}
+
+        {{#if_eq user.role 'admin'}}
+            <div class="button-container"></div>
+                <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+                <button onclick="location.href='/monitoring'" class="btn">Monitoring</button>
+                <button onclick="location.href='/analytics'" class="btn">Analytics</button>
+                <button id="suggestions_button" class="btn">Suggestions</button>
+                <button id="heatmaps_button" class="btn">Heatmaps</button>
+            <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+            </div>
+        {{/if_eq}}
+
+        {{#if_eq user.role 'citizen'}}
+            <div class="button-container">
+                <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+                <button id="suggestions_button" class="btn">Suggestions</button>
+                <button id="heatmaps_button" class="btn">Heatmaps</button>
+                <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+            </div>
+        {{/if_eq}}
+        
+    {{/if}}
+    
+</div>
