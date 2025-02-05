@@ -6,7 +6,8 @@
 
 html
 {
-  height: 100%;
+  height: 100vh;
+  width: 100vw;
 }
 
 :root{
@@ -25,14 +26,122 @@ body{
   flex-direction: column;
   text-align: center;
   justify-content: center;
+  margin: 10px;
 }
 
-.main-header{
-  height: 33%;
+
+/* HEADER */
+/* .main-header{
+  height: 30%;
   display: flex;
   justify-content: left;
   align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+} */
 
+.header-container{
+  width: 100%;
+  height: 10vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.header_navbar{
+  width: 100%;
+  /* height: 10vh; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2% 10%;
+}
+
+.logo{
+   width: 150px;
+   cursor: pointer;
+}
+
+.header_navbar ul li{
+   list-style: none;
+   display: inline-block;
+   margin: 0 20px;
+   position: relative;
+}
+
+.header_navbar ul li a{
+   text-decoration: none;
+   color: #000000;
+   text-transform: uppercase;
+   font-size: 1.5em;
+}
+
+.header_navbar ul li::after{
+   content:'';
+   height: 2px;
+   width: 0;    
+   background-color: #000000;
+   position: absolute;
+   left: 0;
+   bottom: -5px;
+   transition: 0.7s;
+}
+
+.header_navbar ul li:hover::after{
+   width: 100%;
+}
+
+/* HEADER ADDONS */
+.header_navbar ul li ul {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  padding-left: 0;
+  left: 0;
+  display: none;
+  width: 100%
+
+}
+
+.header_navbar ul li:hover > ul,
+.header_navbar ul li ul:hover{
+  visibility: visible;
+  opacity: 1;
+  display: block;
+  min-width: 250%;
+  text-align: left;
+  padding-top: 20%;
+  background-color: #a78c8ccc;
+  box-shadow: 0px 3px 5px -1px #000000;
+  border-radius: 15px;
+}
+
+.header_navbar ul li ul li {
+  clear: both;
+  width: 80%;
+  text-align: left;
+  margin-bottom: 20px;
+  border-style: none;
+}
+.header_navbar ul li ul li:hover::after {
+  width: 100%;
+}
+
+.header_navbar ul li ul li::after {
+  content:'';
+   height: 2px;
+   width: 0;    
+   background-color: #000000;
+   position: absolute;
+   left: 0;
+   bottom: -5px;
+   transition: 0.7s;
+}
+
+a {
+  text-decoration: none;
 }
 
 .logo-container{
@@ -48,6 +157,18 @@ body{
   height: 100px;
 }
 
+/* FOOTER */
+.main-footer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* MAIN CONTENT */
 .menu{
   height: 100%;
   width: 100vw;
@@ -78,7 +199,7 @@ body{
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-bottom: 100px;
+  /* margin-bottom: 100px; */
 }
 
 .greeting{
@@ -90,16 +211,13 @@ body{
 
 .controls-container{
   width: 100vw;
-  margin-bottom: 100px;
+  height: 200px;
 }
-
 
 .button-container{
   display: flex;
   justify-content: center;
   align-items: center;
-  
-
 }
 
 .btn{
@@ -120,6 +238,113 @@ body{
   height: 100%;
   height: 400px; 
   width: 80%; 
+}
+
+#greeting-container{
+  display: block;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.greeting-text{
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.greeting-text h1{
+  font-size: 4rem;
+}
+
+
+/* Forms */
+.form-container{
+  background: transparent;
+  border: 2px solid rgba(225, 225, 225, 0.4);
+  backdrop-filter: blur(10px);
+  color: #000000;
+  border-radius: 15px;
+  width: 30vw;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  padding: 10px 10px 10px 10px;
+}
+
+.form-container h1{
+  font-size: 3.6em;
+  text-align: center;
+}
+
+.input-box{
+  width: 100%;
+  height: 50px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  text-align: center;
+  justify-content: center;
+  gap: 50px;
+}
+
+.input-box input{
+  width: 90%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(22, 93, 224, 0.2);
+  border-radius: 40px;
+  font-size: 1.5em;
+  color: #000000;
+  padding-left: 15px
+}
+
+.input-box input::placeholder{
+  color: #000000;
+}
+
+.input-box i{
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+}
+
+.remember-forgot{
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4em;
+}
+
+.remember-forgot label input{
+  accent-color: #000000;
+}
+
+.remember-forgot a{
+  color: #000000;
+  text-decoration: none;
+}
+
+.remember-forgot a:hover{
+  text-decoration: underline;
+}
+
+
+.register-link{
+  font-size: 14px;
+  text-align: center;
+}
+
+.register-link p a{
+  color: #000000;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link p a:hover{
+  text-decoration: underline;
 }
 
 /* .air-quality-container{

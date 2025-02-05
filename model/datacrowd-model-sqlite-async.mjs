@@ -10,11 +10,12 @@ let sql;
 // Connect to the database
 try {
     sql = await Database.open('data/datacrowd.db');
-    console.log('Connected to the gym-chain database.');
+    console.log('Connected to the data-crowd log-in database.');
 } 
 catch (error) {
     throw Error('Error connecting to the database: ' + error);
 }
+
 
 export let getRoleFromUsername = async function (username){
     try {

@@ -4,6 +4,7 @@ import axios from 'axios';
 import dotenv from 'dotenv'
 dotenv.config()
 
+
 //Show the home page
 export async function home(req, res, next) {
     try {

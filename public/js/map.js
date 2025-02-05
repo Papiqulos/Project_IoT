@@ -63,6 +63,13 @@ async function toggleAirQuality() {
 }
 
 function toggleHeatmap() {
+  // Hide the greeting text if it is visible
+  var greetingText = document.getElementById('greeting-container');
+  console.log("greetingText", greetingText.style.display);
+  if (greetingText.style.display === 'block') {
+    greetingText.remove();
+  }
+
   //Hide the suggestions form if it is visible
   var suggestionsForm = document.getElementById('suggestionsForm');
   if (suggestionsForm.style.display === 'block') {
@@ -75,9 +82,6 @@ function toggleHeatmap() {
     heatmapsForm.style.display = 'none';
   }
 
-
-
-
   heatmap.setMap(heatmap.getMap() ? null : map);
 
   suggestionsClicked = false;
@@ -86,11 +90,18 @@ function toggleHeatmap() {
 }
 
 function toggleSuggestions(){
+  // Hide the greeting text if it is visible
+  var greetingText = document.getElementById('greeting-container');
+  if (greetingText.style.display === 'block') {
+    greetingText.remove();
+  }
+
   // Hide the heatmaps form if it is visible
   var heatmapsForm = document.getElementById('heatmapsForm');
   if (heatmapsForm.style.display === 'block') {
     heatmapsForm.style.display = 'none';
   }
+
   //Hide the heatmap if it is visible
   // clearHeatmap();
   
@@ -291,6 +302,7 @@ function getDirections(origin, destination, travelMode = "WALKING") {
     origin: origin,
     destination: { lat: destination.location.lat(), lng: destination.location.lng() }, 
     travelMode: travelMode,
+  
   };
   directionsService.route(request, function(result, status) {
     if (status == 'OK') {

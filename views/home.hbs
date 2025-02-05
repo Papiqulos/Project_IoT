@@ -1,40 +1,24 @@
 
 {{#if userId}}
   {{#if_eq role 'business'}}
-    <h1>Welcome, {{userId}}!</h1>
+    {{!-- <h1>Welcome, {{userId}}!</h1> --}}
     {{> map }}
   {{else}}
 
-    <div class="greeting">
+    {{!-- <div class="greeting">
       <h1>Welcome, {{userId}}!</h1>
-    </div>
+    </div> --}}
 
     {{> user_controls}}
-    <div id="suggestionsForm" style="display:none;">
-      <h2>Where do you want to go?</h2>
-      <input id="place_input" type="text" name="query" placeholder="e.g. Πάρκο Ειρήνης">
-      <select id="results_dropdown">
-      </select>
-      <button class="btn" id="search_place" type="submit">Search Places</button>
-      <input type="radio" name="travel_mode" value="DRIVING" checked>Driving
-      <input type="radio" name="travel_mode" value="WALKING">Walking
-      <input type="radio" name="travel_mode" value="TRANSIT">Transit
-      <button class="btn" id="get_directions" type="submit">Get Directions</button>
-    </div>
-    <div id="heatmapsForm" style="display:none;">
-      {{!-- Make this collapsible --}}
-      <button class="btn" id="change-gradient">Change gradient</button>
-      <button class="btn" id="change-radius">Change radius</button>
-      <button class="btn" id="change-opacity">Change opacity</button>
-    </div>
+    
     {{> map }}
   {{/if_eq}}
   
 
 {{else}}
-  <div class="greeting-text">
-    <h1>Welcome to our site!</h1>
-    <p>Please sign in or register to continue.</p>
+  <div class="greeting-container">
+    <h1 class="greeting-text">Welcome to our site!</h1>
+    <p class="greeting-text">Please sign in or register to continue.</p>
   </div>
   <div class="button-container">
     <button onclick="location.href='/login'" class="btn">Log In</button>
