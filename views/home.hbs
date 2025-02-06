@@ -2,6 +2,7 @@
 {{#if userId}}
   {{#if_eq role 'business'}}
     {{!-- <h1>Welcome, {{userId}}!</h1> --}}
+    {{> user_controls}}
     {{> map }}
   {{else}}
 
@@ -10,7 +11,6 @@
     </div> --}}
 
     {{> user_controls}}
-    
     {{> map }}
   {{/if_eq}}
   

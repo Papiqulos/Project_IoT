@@ -186,7 +186,7 @@ async function getGoogleApiKey() {
 }
 
 // Finds nearby places and displays heatmap data for them (for the moment only markers appear on nearby places) 
-async function nearbySearch() {
+async function nearbySearch(results = 5) {
     //@ts-ignore
     const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary(
       "places",
@@ -202,7 +202,7 @@ async function nearbySearch() {
         radius: 700,
       },
       // optional parameters
-      maxResultCount: 5,
+      maxResultCount: results,
       rankPreference: SearchNearbyRankPreference.POPULARITY,
       language: "en-GR",
       region: "gr",
@@ -249,7 +249,7 @@ function clearMarkers() {
   window.markers = [];
 }
 
-// Find a place by text (For the time being it searches for "Δένδρα Κουνάβη" and displays the markers on the map)
+// Find a place by text 
 async function findPlacesByText(text, results = 15) {
     const { Place } = await google.maps.importLibrary("places");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -424,22 +424,22 @@ async function initMap() {
 
 
   // For the heatmaps
-  // map.addListener("dragend", () => {  
-  //   console.log("dragend");
-  //   if (suggestionsClicked){return;}
-  //   if (!heatmapsClicked) {return;}
-  //   // Clear directions if any
-  //   clearDirections();
-  //   isDragging = false;
-  //   const newCenter = map.getCenter();
-  //   center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
-  //   console.log("new center", center1);
+  map.addListener("dragend", () => {  
+    console.log("dragend");
+    if (suggestionsClicked){return;}
+    if (!heatmapsClicked) {return;}
+    // Clear directions if any
+    clearDirections();
+    isDragging = false;
+    const newCenter = map.getCenter();
+    center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
+    console.log("new center", center1);
 
-  //   // Perform a debounced nearby search
-  //   debouncedNearbySearch();
+    // Perform a debounced nearby search
+    debouncedNearbySearch();
     
-  // }
-  // );
+  }
+  );
 
   // Show/hide suggestions cotrols
   document
