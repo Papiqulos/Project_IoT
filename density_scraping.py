@@ -9,7 +9,7 @@ import time
 import csv
 import pprint
 
-url = "https://www.google.com/maps/place/ZARA/@38.2478515,21.72607,15z/data=!4m6!3m5!1s0x135e49dd465bafa7:0x731033e8a59cc62d!8m2!3d38.2478507!4d21.7363707!16s%2Fg%2F1tdhw2nm?entry=ttu&g_ep=EgoyMDI1MDIwMy4wIKXMDSoJLDEwMjExMjMzSAFQAw%3D%3D"
+url = "https://www.google.com/maps/place/OMNIA+downtown/@38.2525866,21.7342463,18.25z/data=!4m6!3m5!1s0x135e496e616ccce9:0x61c7fa4d6e47b844!8m2!3d38.2524013!4d21.7368184!16s%2Fg%2F11h7rgt98d?entry=ttu&g_ep=EgoyMDI1MDIwMy4wIKXMDSoASAFQAw%3D%3D"
 
 
 service = Service(ChromeDriverManager().install())
@@ -48,31 +48,37 @@ try:
 
 
     # Arrange the days starting with Κυριακή 
-    
     ordered_days = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο']
     crowd_density = {day: crowd_density[day] for day in ordered_days if day in crowd_density}
 
     # Find all classes that contain 'g2BVhd' in their name
     densities_element = soup.find_all(class_=lambda class_name: class_name and 'g2BVhd' in class_name)
-    # find how many children each element with class name
+    for day_element in densities_element:
+        # Find the class name of the first child
+        first_child = day_element.findChildren()[0] 
+        if first_child.get('class')[0] == "c3RoDe":
+            continue
+
+    # Find how many children each element with class name
     densities_children = [len(element.findChildren()) for element in densities_element]
-    print(densities_children)
+    densities_children.sort()
+    hours_length = densities_children[-2] / 3
 
     # Find all classes that contain 'dpoVLd' in their name
-    # densities_element = soup.find_all(class_=lambda class_name: class_name and 'dpoVLd' in class_name)
-    # densities_aria_labels = [element.get('aria-label') for element in densities_element]
-    # day_index = -1
-    # for i, aria_label in enumerate(densities_aria_labels):
-    #     if i % 18 == 0:
-    #         day_index += 1
+    densities_element = soup.find_all(class_=lambda class_name: class_name and 'dpoVLd' in class_name)
+    densities_aria_labels = [element.get('aria-label') for element in densities_element]
+    day_index = -1
+    for i, aria_label in enumerate(densities_aria_labels):
+        if i % hours_length == 0:
+            day_index += 1
         
-    #     crowd_density[list(crowd_density.keys())[day_index]].append(aria_label)
+        crowd_density[list(crowd_density.keys())[day_index]].append(aria_label)
             
 
 
 
             
-    # print(crowd_density)
+    # pprint.pprint(crowd_density)
      
 except Exception as e: 
     print(e)
