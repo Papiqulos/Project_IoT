@@ -31,25 +31,21 @@ body{
 /* HEADER */
 .header-container{
   width: 100%;
-  height: 10vh;
+  height: 10%;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
   background-color: rgb(182, 182, 182);
   z-index: 1000;
+  
 
 }
 
 .header_navbar{
   width: 100%;
-  /* height: 10vh; */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2% 10%;
 }
 
 .logo{
@@ -169,11 +165,12 @@ a {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* margin-bottom: 100px; */
 }
 
 /* GENERAL BUTTON */
-.btn{
+
+/* OLD BUTTON DESIGN */
+/* .btn{
   display: inline-block;
   padding: 10px 10px 10px 10px;
   margin: 10px;
@@ -185,13 +182,58 @@ a {
   overflow: hidden;
   transition: 0.5s;
   
+} */
+
+/* NEW BUTTON DESIGN */
+.btn {
+  align-items: center;
+  appearance: none;
+  background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+  border: 0;
+  border-radius: 6px;
+  box-shadow: rgba(45, 35, 66, .4) 0 2px 4px,rgba(45, 35, 66, .3) 0 7px 13px -3px,rgba(58, 65, 111, .5) 0 -3px 0 inset;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: "JetBrains Mono",monospace;
+  height: 48px;
+  justify-content: center;
+  line-height: 1;
+  list-style: none;
+  overflow: hidden;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  text-align: left;
+  text-decoration: none;
+  transition: box-shadow .15s,transform .15s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  will-change: box-shadow,transform;
+  font-size: 18px;
+}
+
+.btn:focus {
+  box-shadow: #3c4fe0 0 0 0 1.5px inset, rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
+}
+
+.btn:hover {
+  box-shadow: rgba(45, 35, 66, .4) 0 4px 8px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  box-shadow: #3c4fe0 0 3px 7px inset;
+  transform: translateY(2px);
 }
 
 /* THE MAP */
 #map{
-  height: 90%;
-  width: 100%; 
-  margin-top: 5.5%;
+  height: 100%;
+  width: 100vw; 
 }
 
 /* TOP LEFT CONTROLS */
@@ -287,16 +329,25 @@ a {
   margin: 10px;
 }
 
+/* RADIO BUTTONS */
+
+
 /* TOP RIGHT CONTROLS */
 .general-button-container{
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: #f6f6f6;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
+  border-radius: 28px;
+  margin: 10px;
 }
 
 .general-button-container .btn{
-  width: 200px;
+  width: 90%;
 }
 
 

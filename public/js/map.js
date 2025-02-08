@@ -535,7 +535,6 @@ async function initMap() {
   heatmap.setMap(null);
 
   // Origin marker
-  console.log("currentLocation", window.currentLocation);
   const originMarker = new AdvancedMarkerElement({
 
     position: default_center,
@@ -558,7 +557,6 @@ async function initMap() {
   //////////////////////////
 
   // Destination marker
-  console.log("center_bald", center_bald);
   const destinationMarker = new AdvancedMarkerElement({
     position: center_bald,
     map: map,
@@ -592,9 +590,9 @@ async function initMap() {
   // Listeners for the search bar
   // ORIGIN //
   // When typing in the search bar DOESNT WORK
-  document
-    .getElementById("origin_input")
-    .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
+  // document
+  //   .getElementById("origin_input")
+  //   .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
 
   //When the search bar is focused
   let focusCountOrigin = 0;
@@ -625,9 +623,9 @@ async function initMap() {
 
   // DESTINATION //
   // When typing in the search bar DOESNT WORK
-  document
-    .getElementById("destination_input")
-    .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
+  // document
+  //   .getElementById("destination_input")
+  //   .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
 
   //When the search bar is focused
   let focusCountDestination = 0;

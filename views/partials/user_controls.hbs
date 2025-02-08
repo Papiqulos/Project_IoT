@@ -1,117 +1,134 @@
-{{!-- {{!-- <div class="controls-container"  style="display: none;"> --}}
-    {{!-- Universal user controls --}} --}}
 
-    <div class="universal-controls-container">
-        {{!-- Universal user controls --}}
+  {{! User controls according to user type }}
+  {{#if userId}}
 
-        
+    {{#if_eq user.role "business"}}
+      <div class="button-container">
+        <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+        <button
+          onclick="location.href='/monitoring'"
+          class="btn"
+        >Monitoring</button>
+        <button
+          onclick="location.href='/analytics'"
+          class="btn"
+        >Analytics</button>
+        <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+      </div>
+    {{/if_eq}}
 
-    </div>
+    {{#if_eq user.role "admin"}}
+      <div class="button-container">
+        <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+        <button
+          onclick="location.href='/monitoring'"
+          class="btn"
+        >Monitoring</button>
+        <button
+          onclick="location.href='/analytics'"
+          class="btn"
+        >Analytics</button>
+        <button id="suggestions_button" class="btn">Suggestions</button>
+        <button id="heatmaps_button" class="btn">Heatmaps</button>
+        <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+      </div>
+    {{/if_eq}}
 
-    <div class="user-dependent-controls-container">
-        {{!-- User controls according to user type --}}
-        {{#if userId}}
-                
-            {{#if_eq user.role 'business'}}
-                <div class="button-container">
-                    <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
-                    <button onclick="location.href='/monitoring'" class="btn">Monitoring</button>
-                    <button onclick="location.href='/analytics'" class="btn">Analytics</button>
-                    <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
-                </div>
-            {{/if_eq}}
+    {{#if_eq user.role "citizen"}}
 
-            {{#if_eq user.role 'admin'}}
-                <div class="button-container">
-                    <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
-                    <button onclick="location.href='/monitoring'" class="btn">Monitoring</button>
-                    <button onclick="location.href='/analytics'" class="btn">Analytics</button>
-                    <button id="suggestions_button" class="btn">Suggestions</button>
-                    <button id="heatmaps_button" class="btn">Heatmaps</button>
-                <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
-                </div>
-            {{/if_eq}}
+      <div id="top-left-controls">
 
-            {{#if_eq user.role 'citizen'}}
+        <div class="input-container">
+          <div class="search-results">
 
-                <div id="top-left-controls">
-                    
-                    <div class="input-container">
-                        <div class="search-results">
+            <div class="search">
+              <span class="search-icon material-symbols-outlined">
+                <a href="#">
+                  <img src="/images/search.svg" alt="search" />
+                </a>
+              </span>
+              <input
+                class="search-input"
+                id="origin_input"
+                type="seach"
+                name="query"
+                placeholder="Your Location"
+              />
+              <img src="/images/arrow_forward.svg" alt="arrow" class="arrow" />
+              <input
+                class="search-input"
+                id="destination_input"
+                type="seach"
+                name="query"
+                placeholder="e.g. Πάρκο Ειρήνης"
+              />
+            </div>
 
-                            <div class="search">
-                                <span class="search-icon material-symbols-outlined">
-                                    <a href="#">
-                                        <img src="/images/search.svg" alt="search">
-                                    </a>
-                                </span>
-                                <input class="search-input" id="origin_input" type="seach" name="query" placeholder="Your Location">
-                                <img src="/images/arrow_forward.svg" alt="arrow" class="arrow">
-                                <input class="search-input" id="destination_input" type="seach" name="query" placeholder="e.g. Πάρκο Ειρήνης">
-                            </div>
+            <div class="results" id="results" , style="display:none;">
+              <ul class="results_list" id="results-list-origin">
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+              </ul>
 
-                            <div class="results" id="results", style="display:none;">
-                                <ul class="results_list" id="results-list-origin">
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                </ul>
+              <ul class="results_list" id="results-list-destination">
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+                <button class="result">.......</button>
+              </ul>
+            </div>
 
-                                <ul class="results_list" id="results-list-destination">
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                    <button class="result">.......</button>
-                                </ul>
-                            </div>
+            <div class="travel-mode-controls">
 
-                            <div class="travel-mode-controls">
+              <input
+                type="radio"
+                class="radio"
+                id="radio-1"
+                name="travel_mode"
+                value="DRIVING"
+              />DRIVING
 
-                                {{!-- <button class="btn" id="search_place" type="submit">Search Places</button> --}}
-                                <input type="radio" name="travel_mode" value="DRIVING" checked>Driving
-                                <input type="radio" name="travel_mode" value="WALKING">Walking
-                                <input type="radio" name="travel_mode" value="TRANSIT">Transit
-                                
-                            </div>
-                            <button class="btn" id="get_directions" type="submit">Get Directions</button>
+              <input
+                type="radio"
+                class="radio"
+                id="radio-2"
+                name="travel_mode"
+                value="WALKING"
+              />WALKING
 
+              <input
+                type="radio"
+                class="radio"
+                id="radio-3"
+                name="travel_mode"
+                value="TRANSIT"
+              />TRANSIT
 
-                        </div>
-                        
-                        <div class="other-controls">
+            </div>
+            <button class="btn" id="get_directions" type="submit">Get Directions</button>
 
-                            {{!-- <button class="btn" id="search_place" type="submit">Search Places</button> --}}
-                            
-                        </div>
-                    </div>
+          </div>
+        </div>
 
-                    
+      </div>
 
-                </div>
-                
-                <div id="top-right-controls">
-                    <div class="general-button-container">
-                        <button id="locationButton" class="btn">Pan to Current Location</button>
-                        <button id="heatmaps_button" class="btn">Heatmaps</button>
-                        <button id="change-gradient" class="btn">Change Gradient</button>
-                        <button id="change-opacity" class="btn">Change Opacity</button>
-                        <button id="change-radius" class="btn">Change Radius</button>
-                        <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
-                        <button id="infoButton" class="btn">✉️</button>
-                    </div>
-                </div>
+      <div id="top-right-controls">
+        <div class="general-button-container">
+          <button id="locationButton" class="btn">Your Current Location</button>
+          <button id="heatmaps_button" class="btn">Heatmaps</button>
+          <button id="change-gradient" class="btn">Change Gradient</button>
+          <button id="change-opacity" class="btn">Change Opacity</button>
+          <button id="change-radius" class="btn">Change Radius</button>
+          <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+          <button id="infoButton" class="btn">✉️</button>
+        </div>
+      </div>
 
-            {{/if_eq}}
-            
-        {{/if}}
+    {{/if_eq}}
 
-    </div>
+  {{/if}}
 
-
-    
-
-    
-{{!-- </div> --}}
