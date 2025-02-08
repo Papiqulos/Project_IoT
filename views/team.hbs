@@ -1,0 +1,19 @@
+<select id="dropdown" onchange="checkCustomOption(this)">
+  <option value="Option 1">Option 1</option>
+  <option value="Option 2">Option 2</option>
+  <option value="Option 3">Option 3</option>
+  <option value="custom">Other...</option>
+</select>
+<input type="text" id="customInput" placeholder="Enter custom value" style="display:none;" />
+
+<script>
+  function checkCustomOption(select) {
+    let customInput = document.getElementById("customInput");
+    if (select.value === "custom") {
+      customInput.style.display = "inline";
+      customInput.focus();
+    } else {
+      customInput.style.display = "none";
+    }
+  }
+</script>

@@ -27,6 +27,66 @@ export async function home(req, res, next) {
     }
 }
 
+//Show the about page
+export async function about(req, res, next) {
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('about', { session: req.session, user: user, role: role });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+//Show the features page
+export async function features(req, res, next) {
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('features', { session: req.session, user: user, role: role });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+//Show the roadmap page
+export async function roadmap(req, res, next) {
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('roadmap', { session: req.session, user: user, role: role });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+//Show the our_team page
+export async function ourTeam(req, res, next) {
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('team', { session: req.session, user: user, role: role });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+//Show the FAQ page
+export async function faq(req, res, next) {
+    try {
+        const role = await model.getRoleFromUsername(req.session.loggedUserId);
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        res.render('faq', { session: req.session, user: user, role: role });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
 export async function checkAdmin(req, res, next) {  
     try {
         const role = await model.getRoleFromUsername(req.session.loggedUserId);

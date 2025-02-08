@@ -16,6 +16,22 @@ router.route('/').get((req, res) => {
 //Home page
 router.get('/home', dataCrowdController.home);
 
+//About page
+router.get('/about', dataCrowdController.about);
+
+//Features page
+router.get('/features', dataCrowdController.features);
+
+//Roadmap page
+router.get('/roadmap', dataCrowdController.roadmap);
+
+
+//Our Team page
+router.get('/team', dataCrowdController.ourTeam);
+
+//FAQ page
+router.get('/faq', dataCrowdController.faq);
+
 //Secure fetching of the API key
 router.route('/api/key').get(dataCrowdController.getAPIKey);
 

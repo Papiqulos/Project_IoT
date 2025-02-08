@@ -6,7 +6,91 @@ let isDragging = false;
 const center_HMTY = [38.28806669351595, 21.78915113469408];
 let center1 = { lat: center_HMTY[0], lng: center_HMTY[1] };
 const googleApiKey = getGoogleApiKey();
+let selectedOrigin;
+let selectedDestination;
+let currentLocation;
+let currentDirections;
 
+// Debounce function to limit API requests
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+async function showDirections() {
+  console.log("searching place");
+    const travelModeRadios = document.getElementsByName('travel_mode');
+    let selectedTravelMode;
+    let selectedOrigin = window.selectedOrigin || window.currentLocation;
+    let selectedDestination = window.selectedDestination || {lat : 38.23666252117088, lng: 21.732572423403976}; // defaults to euagellobill
+
+    for (const radio of travelModeRadios) {
+      if (radio.checked) {
+        selectedTravelMode = radio.value;
+        break;
+      }
+    }
+
+    // Get directions to the place
+    // console.log("Origin", selectedOrigin);
+    // console.log("Destination", selectedDestination);
+    // console.log("selectedTravelMode", selectedTravelMode);
+    clearDirections();
+    clearMarkers();
+    getDirections(selectedOrigin, selectedDestination, selectedTravelMode);
+}
+
+async function autoCompleteOriginDestination() {
+  // console.log("searching place");
+
+  const results = document.getElementsByClassName('result');
+  // console.log("number of results", results.length);
+
+  // Get the origin input
+  const originInput = document.getElementById('origin_input').value;
+
+  // Find the origins based on the user input
+  let selectedOrigins = await findPlacesByText(originInput, 5) || [];
+
+  // Add the results below the input
+  selectedOrigins.forEach((place, index) => {
+    // console.log("place", place.displayName);
+    // console.log("index", index);
+    
+    const result = results[index];
+    console.log(result.text)
+    result.value = index;
+    result.textContent = place.displayName;
+  });
+
+  window.selectedOrigin = selectedOrigins[0]; // Default to the first result
+
+
+  // Get the destination input
+  const destinationInput = document.getElementById('destination_input').value;
+  // console.log("user_input", userInput);
+
+  // Find the destinations based on the user input
+  let selectedDestinations = await findPlacesByText(destinationInput, 5) || [];
+
+  // Add the results below the input
+  selectedDestinations.forEach((place, index) => {
+    console.log("place", place.displayName);
+    console.log("index", index);
+    
+    const result = results[index+5];
+    console.log(result.text)
+    result.value = index;
+    result.textContent = place.displayName;
+  });
+
+  // Store the selected destination
+  window.selectedDestination = selectedDestinations[0]; // Default to the first result
+
+}
 
 async function toggleAirQuality() {
   try {
@@ -63,55 +147,53 @@ async function toggleAirQuality() {
 }
 
 function toggleHeatmap() {
-  // Hide the greeting text if it is visible
-  var greetingText = document.getElementById('greeting-container');
-  console.log("greetingText", greetingText.style.display);
-  if (greetingText.style.display === 'block') {
-    greetingText.remove();
-  }
 
-  //Hide the suggestions form if it is visible
-  var suggestionsForm = document.getElementById('suggestionsForm');
-  if (suggestionsForm.style.display === 'block') {
-    suggestionsForm.style.display = 'none';
-  }
+  // // Hide the greeting text if it is visible
+  // var greetingText = document.getElementById('greeting-container');
+  // console.log("greetingText", greetingText.style.display);
+  // if (greetingText.style.display === 'block') {
+  //   greetingText.remove();
+  // }
 
-  if (heatmapsForm.style.display === 'none') {
-    heatmapsForm.style.display = 'block';
-  } else {
-    heatmapsForm.style.display = 'none';
-  }
+  // //Hide the suggestions form if it is visible
+  // var suggestionsForm = document.getElementById('suggestionsForm');
+  // if (suggestionsForm.style.display === 'block') {
+  //   suggestionsForm.style.display = 'none';
+  // }
+
+  // if (heatmapsForm.style.display === 'none') {
+  //   heatmapsForm.style.display = 'block';
+  // } else {
+  //   heatmapsForm.style.display = 'none';
+  // }
 
   heatmap.setMap(heatmap.getMap() ? null : map);
-
-  suggestionsClicked = false;
-  heatmapsClicked = !heatmapsClicked;
-  clearMarkers();
 }
 
 function toggleSuggestions(){
+
   // Hide the greeting text if it is visible
-  var greetingText = document.getElementById('greeting-container');
-  if (greetingText.style.display === 'block') {
-    greetingText.remove();
-  }
+  // var greetingText = document.getElementById('greeting-container');
+  // if (greetingText.style.display === 'block') {
+  //   greetingText.style.display = 'none';
+  // }
 
-  // Hide the heatmaps form if it is visible
-  var heatmapsForm = document.getElementById('heatmapsForm');
-  if (heatmapsForm.style.display === 'block') {
-    heatmapsForm.style.display = 'none';
-  }
+  // // Hide the heatmaps form if it is visible
+  // var heatmapsForm = document.getElementById('heatmapsForm');
+  // if (heatmapsForm.style.display === 'block') {
+  //   heatmapsForm.style.display = 'none';
+  // }
 
-  //Hide the heatmap if it is visible
-  // clearHeatmap();
+  // //Hide the heatmap if it is visible
+  // // clearHeatmap();
   
-  var suggestionsForm = document.getElementById('suggestionsForm');
+  // var suggestionsForm = document.getElementById('suggestionsForm');
 
-  if (suggestionsForm.style.display === 'none') {
-    suggestionsForm.style.display = 'block';
-  } else {
-    suggestionsForm.style.display = 'none';
-  }
+  // if (suggestionsForm.style.display === 'none') {
+  //   suggestionsForm.style.display = 'flex';
+  // } else {
+  //   suggestionsForm.style.display = 'none';
+  // }
 
   suggestionsClicked = !suggestionsClicked;
   heatmapsClicked = false;
@@ -251,15 +333,20 @@ function clearMarkers() {
 
 // Find a place by text 
 async function findPlacesByText(text, results = 15) {
+
+    if (!text) {
+      console.log("No text provided");
+      return;
+    }
     const { Place } = await google.maps.importLibrary("places");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
     const request = {
     textQuery: text,
-    fields: ["displayName", "location", "businessStatus"],
+    fields: ["displayName", "location", "businessStatus", "formattedAddress"],
     maxResultCount: results,
     minRating: 3.2,
     useStrictTypeFiltering: false,
-  };
+    };
   //@ts-ignore
   const { places } = await Place.searchByText(request);
 
@@ -287,9 +374,8 @@ async function findPlacesByText(text, results = 15) {
   }
 }
 
-//Get directions from the center of the map to a specific location
-function getDirections(origin, destination, travelMode = "WALKING") {
-  if (!suggestionsClicked) {return;}
+// Get directions from the center of the map to a specific location
+async function getDirections(origin, destination, travelMode = "DRIVING") {
   // Clear any existing directions
   clearDirections();
   // Clear any existing markers
@@ -297,17 +383,34 @@ function getDirections(origin, destination, travelMode = "WALKING") {
   var directionsService = new google.maps.DirectionsService();
   var directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
-
+  console.log("origin", origin);
+  console.log("destination", destination);
+  console.log("travelMode", travelMode);
   var request = {
     origin: origin,
-    destination: { lat: destination.location.lat(), lng: destination.location.lng() }, 
+    destination: destination, 
     travelMode: travelMode,
   
   };
-  directionsService.route(request, function(result, status) {
+  directionsService.route(request, async function(result, status) {
     if (status == 'OK') {
       directionsRenderer.setDirections(result);
-    window.currentDirections = directionsRenderer;
+      // console.log("result", JSON.stringify(result.routes[0].legs[0].steps[0].path));
+      
+      const steps = result.routes[0].legs[0].steps;
+      steps.forEach((step) => {
+        const path = step.path;
+        const middlePoint = path[Math.floor(path.length / 2)];
+        // Visualize the middle point of each step
+        const markerView = new google.maps.marker.AdvancedMarkerElement({
+          position: middlePoint,
+          map: map,
+          title: step.instructions,
+        });
+        // Store the marker for later removal
+        window.markers.push(markerView);
+      });
+
       }
     });
   }
@@ -388,155 +491,183 @@ function getCurrentLocation(callback) {
 
 // Initialize the map
 async function initMap() {
-  const { Map } = await google.maps.importLibrary("maps");
 
+  //// Initialize the map
+  const { Map } = await google.maps.importLibrary("maps");
   map = new Map(document.getElementById("map"), {
     center: center1, // HMTY 38.26469392470636, 21.742012983437373
     zoom: 17,
     mapId: "DEMO_MAP_ID",
+    disableDefaultUI: true,
   });
 
-  // Get the user's current location and store it in a global variable
+  //// Initialize the heatmap
+  // Create a heatmap
+  heatmap = new google.maps.visualization.HeatmapLayer({
+    data: getPoints(), //Fake data for the time being
+    map: map,
+  });
+
+  //Hide the heatmap by default
+  heatmap.setMap(null);
+
+  //// Get the user's current location and store it in a global variable
   getCurrentLocation(() => {
     console.log("currentLocation", window.currentLocation);
   });
 
+  //// Get the info window
   infoWindow = new google.maps.InfoWindow();
 
-  // Create the button to pan to the user's current location
-  const locationButton = document.createElement("button");
-  locationButton.textContent = "Pan to Current Location";
-  locationButton.classList.add("btn");
-  map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
-  locationButton.addEventListener("click", toggleCurrentLocation);
-
-  // Create a button that shows a list of relative information about the user's location and the nearby places
-  const notifsButton = document.createElement("button");
-  notifsButton.textContent = "✉️";
-  notifsButton.classList.add("btn");
-  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(notifsButton);
-  notifsButton.addEventListener("click", toggleAirQuality);
-
+  
   // Debounced version of nearbySearch
   const debouncedNearbySearch = debounce(() => {
     nearbySearch();
   }, 500); // Adjust the delay as needed (e.g., 1000ms)
 
+  /////// MAP CONTROLS
 
-  // For the heatmaps
+  //// TOP LEFT CONTROLS
+  const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
+
+  // Listeners for the search bar
+  // ORIGIN
+  // When typing in the search bar
+  document
+    .getElementById("origin_input")
+    .addEventListener("input", autoCompleteOriginDestination);
+
+  //When the search bar is focused
+  document
+    .getElementById("origin_input")
+    .addEventListener("focus", async function() {
+    // console.log("focus");
+    var results = document.getElementById("results");
+    results.style.display = "flex";
+    results.style.flexDirection = "row";
+    // Get the nearby places accourding to the user's location
+    // nearbySearch();
+  });
+
+  //When the search bar is unfocused
+  document
+    .getElementById("origin_input")
+    .addEventListener("blur", async function() {
+    // console.log("blur");
+    // var results = document.getElementById("results");
+    // results.style.display = "none";
+  });
+
+  // DESTINATION
+  // When typing in the search bar
+  document
+    .getElementById("destination_input")
+    .addEventListener("input", autoCompleteOriginDestination);
+
+  //When the search bar is focused
+  document
+    .getElementById("destination_input")
+    .addEventListener("focus", async function() {
+    // console.log("focus");
+    var results = document.getElementById("results");
+    results.style.display = "flex";
+    results.style.flexDirection = "row";
+    // Get the nearby places accourding to the user's location
+    // nearbySearch();
+  });
+
+  //When the search bar is unfocused
+  document
+    .getElementById("destination_input")
+    .addEventListener("blur", async function() {
+    // console.log("blur");
+    // var results = document.getElementById("results");
+    // results.style.display = "none";
+  });
+
+  // Listeners for the origin and destination results
+  // When an origin result is clicked
+  document
+    .getElementById("results-list-origin")
+    .addEventListener("click", async function(event) {
+      const target = event.target;
+      if (target.classList.contains("result")) {
+        const buttonName = target.textContent;
+        console.log("origin clicked:", buttonName);
+        window.selectedOrigin = buttonName;
+        const originInput = document.getElementById("origin_input");
+        originInput.textContent = buttonName;
+      }
+  });
+
+  // When a destination result is clicked
+  document
+    .getElementById("results-list-destination")
+    .addEventListener("click", async function(event) {
+      const target = event.target;
+      if (target.classList.contains("result")) {
+        const buttonName = target.textContent;
+        console.log("destination clicked:", buttonName);
+        window.selectedDestination = buttonName;
+        const destinationInput = document.getElementById("destination_input");
+        destinationInput.textContent = buttonName;
+      }
+  });
+
+
+
+  // Listener for the "SEARCH PLACES" button
+  // Get a list of results from a place search and store them for later use
+  // document
+  //   .getElementById('search_place')
+  //   .addEventListener('click', autoCompleteOriginDestination);
+
+  // Listener for the "GET DIRECTIONS" button
+  // Get directions to a place
+  document
+    .getElementById('get_directions')
+    .addEventListener('click', showDirections);
+
+
+  //// TOP RIGHT CONTROLS
+  const topRightControls = document.getElementById("top-right-controls"); //get the top right controls container
+  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(topRightControls); //push the top right controls container to the top right of the map
+
+  // Listener for the "PAN TO CURRENT LOCATION" button
+  // Pans the map to the user's current location
+  document
+    .getElementById("locationButton")
+    .addEventListener("click", toggleCurrentLocation);
+  
+  // Listener for the "HEATMAPS" button
+  // Toggles the heatmap on the map
+  document
+    .getElementById('heatmaps_button')
+    .addEventListener('click', toggleHeatmap);
+
+  // Listener for the "✉️" button
+  // Relative information about the user's nearby places and their air quality
+  document
+    .getElementById("infoButton")
+    .addEventListener("click", toggleAirQuality);
+  
+  // Misc listeners for various heatmap options
+  document
+    .getElementById("change-gradient")
+    .addEventListener("click", changeGradient);
+  document
+    .getElementById("change-opacity")
+    .addEventListener("click", changeOpacity);
+  document
+    .getElementById("change-radius")
+    .addEventListener("click", changeRadius);
+
+  // Listeners for map actions
   map.addListener("dragend", () => {  
     console.log("dragend");
-    if (suggestionsClicked){return;}
-    if (!heatmapsClicked) {return;}
-    // Clear directions if any
-    clearDirections();
-    isDragging = false;
-    const newCenter = map.getCenter();
-    center1 = { lat: newCenter.lat(), lng: newCenter.lng() };
-    console.log("new center", center1);
-
-    // Perform a debounced nearby search
-    debouncedNearbySearch();
-    
-  }
-  );
-
-  // Show/hide suggestions cotrols
-  document
-  .getElementById('suggestions_button')
-  .addEventListener('click', toggleSuggestions);
-
-// Create a heatmap
-heatmap = new google.maps.visualization.HeatmapLayer({
-  data: getPoints(), //Fake data for the time being
-  map: map,
-});
-//Hide the heatmap by default
-heatmap.setMap(null);
-
-// Show/hide heatmap
-document
-  .getElementById('heatmaps_button')
-  .addEventListener('click', toggleHeatmap);
-
-document
-  .getElementById("change-gradient")
-  .addEventListener("click", changeGradient);
-document
-  .getElementById("change-opacity")
-  .addEventListener("click", changeOpacity);
-document
-  .getElementById("change-radius")
-  .addEventListener("click", changeRadius);
-
-// Get a list of results from a place search and store them for later use
-document.getElementById('search_place').addEventListener('click', async function() {
-  console.log("searching place");
-
-  // Retrieve user input
-  const userInput = document.getElementById('place_input').value;
-  // console.log("user_input", userInput);
-
-  // Find the place by text
-  let selectedDestinations = await findPlacesByText(userInput, 5);
-  // for (const place of selectedDestinations) {
-  //   console.log("selectedDestination", place.displayName);
-  // }
-
-
-  //Display the results in a dropdown list
-  const dropdown = document.getElementById('results_dropdown');
-  dropdown.innerHTML = ''; // Clear previous results
-
-  selectedDestinations.forEach((place, index) => {
-    const option = document.createElement('option');
-    option.value = index;
-    option.text = place.displayName;
-    dropdown.appendChild(option);
-  });
-
-  // Store the selected destination
-  window.selectedPlace = selectedDestinations[0]; // Default to the first result
-
-  dropdown.addEventListener('change', function() {
-    const selectedIndex = dropdown.selectedIndex;
-    const selectedPlace = selectedDestinations[selectedIndex];
-    // Store the selected place for later use
-    window.selectedPlace = selectedPlace;
-  });
-  
-
-});
-
-// Get directions to a place
-document.getElementById('get_directions').addEventListener('click', async function() {
-  console.log("searching place");
-  const travelModeRadios = document.getElementsByName('travel_mode');
-  let selectedTravelMode;
-  let selectedDestination = window.selectedPlace;
-  for (const radio of travelModeRadios) {
-    if (radio.checked) {
-      selectedTravelMode = radio.value;
-      break;
     }
-  }
-
-  // Get directions to the place
-  console.log("Original location", window.currentLocation);
-  console.log("selectedDestination_name", selectedDestination.displayName);
-  console.log("selectedTravelMode", selectedTravelMode);
-  getDirections(window.currentLocation, selectedDestination, selectedTravelMode);
-});
-
-// Debounce function to limit API requests
-function debounce(func, wait) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-
+  );
 }
 
 
