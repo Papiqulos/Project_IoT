@@ -1,19 +1,14 @@
 // Global variables
-let map, heatmap, infoWindow;
-let suggestionsClicked = false;
-let heatmapsClicked = false;
-let isDragging = false;
+let map, heatmap, infoWindow, selectedOrigin, selectedDestination, currentLocation, currentDirections;
+let markers = [];
+const center_bald = {lat : 38.23666252117088, lng: 21.732572423403976}; // euagellobill
 const center_HMTY = [38.28806669351595, 21.78915113469408];
 let default_center = { lat: center_HMTY[0], lng: center_HMTY[1] };
 const googleApiKey = getGoogleApiKey();
-let selectedOrigin;
-let selectedDestination;
-let currentLocation;
-let currentDirections;
 
 // USER LOCATION
 // Get the user's current location and store it in a global variable
-function getCurrentLocation(callback) {
+async function getCurrentLocation(callback) {
   infoWindow = new google.maps.InfoWindow();
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -36,7 +31,7 @@ function getCurrentLocation(callback) {
     return 0;
   }
 }
-
+// Center the map on the user's current location
 function toggleCurrentLocation() {
   infoWindow = new google.maps.InfoWindow();
   infoWindow.setPosition(window.currentLocation);
@@ -46,7 +41,6 @@ function toggleCurrentLocation() {
 }
 
 // LIMIT API REQUESTS
-// Debounce function to limit API requests
 function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -55,53 +49,77 @@ function debounce(func, wait) {
   };
 }
 
+// GET ADDRESS FROM COORDINATES
+async function getAddressFromCoordinates(location) {
+  const geocoder = new google.maps.Geocoder();
+  const response = await geocoder.geocode({ location: location });
+  return new Promise((resolve, reject) => {
+    if (response && response.results && response.results.length) {
+      resolve(response.results[0].formatted_address);
+    } else {
+      reject("No address found");
+    }
+  });
+}
+
+// GET COORDS FROM PLACE NAME
+async function getCoordsFromPlaceName(placeName) {
+  const geocoder = new google.maps.Geocoder();
+  const response = await geocoder.geocode({ address: placeName });
+  return new Promise((resolve, reject) => {
+    if (response && response.results && response.results.length) {
+      resolve(response.results[0].geometry.location);
+    } else {
+      reject("No address found");
+    }
+  });
+}
+
 // AUTOCOMPLETE SEARCH BAR
-async function autoCompleteOriginDestination() {
-  // console.log("searching place");
-
+async function autoCompleteOriginDestination(selectionFlag = 0) {
+  console.log("in")
+  let selectedOrigins, selectedDestinations;
   const results = document.getElementsByClassName('result');
-  // console.log("number of results", results.length);
 
-  // Get the origin input
+  // Get the origin and destination input
   const originInput = document.getElementById('origin_input').value;
+  const destinationInput = document.getElementById('destination_input').value;
 
   // Find the origins based on the user input
-  let selectedOrigins = await textSearchPlace(originInput, 5) || [];
-
+  if (selectionFlag === 0) {
+    selectedOrigins = await textSearchPlace(originInput, 5) || [];
+    selectedDestinations = await textSearchPlace(destinationInput, 5) || [];
+  }
+  else if (selectionFlag === 1) {
+    selectedOrigins = await nearbySearchPlace(window.currentLocation, 5) || [];
+    selectedDestinations = await nearbySearchPlace(center_bald, 5) || [];
+  }
   // Add the results below the input
   selectedOrigins.forEach((place, index) => {
     // console.log("place", place.displayName);
     // console.log("index", index);
     
     const result = results[index];
-    console.log(result.text)
+    // console.log(result.text)
     result.value = index;
     result.textContent = place.displayName;
   });
 
-  window.selectedOrigin = selectedOrigins[0]; // Default to the first result
-
-
-  // Get the destination input
-  const destinationInput = document.getElementById('destination_input').value;
-  // console.log("user_input", userInput);
-
-  // Find the destinations based on the user input
-  let selectedDestinations = await textSearchPlace(destinationInput, 5) || [];
+  // window.selectedOrigin = selectedOrigins[0]; // Default to the first result
 
   // Add the results below the input
   selectedDestinations.forEach((place, index) => {
-    console.log("place", place.displayName);
-    console.log("index", index);
+    // console.log("place", place.displayName);
+    // console.log("index", index);
     
     const result = results[index+5];
-    console.log(result.text)
+    // console.log(result.text)
     result.value = index;
     result.textContent = place.displayName;
   });
 
   // Store the selected destination
-  window.selectedDestination = selectedDestinations[0]; // Default to the first result
+  // window.selectedDestination = selectedDestinations[0]; // Default to the first result
 
 }
 
@@ -305,9 +323,13 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
             steps.forEach(async (step, i) => {
               const path = step.path;
               const middlePoint = path[Math.floor(path.length / 2)];
-              console.log("middlePoint", middlePoint);
+              // console.log("middlePoint", middlePoint);
               // Get the air quality data for the middle point of each step
               // const airQualityData = await getAirQualityData(middlePoint);
+              // const aqi = airQualityData.indexes[0].value;
+              // const aqiColor = airQualityData.indexes[0].color;
+              // const aqiCategory = airQualityData.indexes[0].category;
+              // console.log(aqi, aqiColor, aqiCategory);
               const markerTitle = "Air Quality Data";
               const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
                 "marker",
@@ -346,26 +368,29 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
 
 // Visualize the directions and the intermediate markers on the map
 async function showDirections() {
-  console.log("searching place");
-    const travelModeRadios = document.getElementsByName('travel_mode');
-    let selectedTravelMode;
-    let selectedOrigin = window.selectedOrigin || window.currentLocation;
-    let selectedDestination = window.selectedDestination || {lat : 38.23666252117088, lng: 21.732572423403976}; // defaults to euagellobill
+  // console.log("searching place");
+  const travelModeRadios = document.getElementsByName('travel_mode');
+  let selectedTravelMode;
+  const originInput = document.getElementById('origin_input').value;
+  const destinationInput = document.getElementById('destination_input').value;
 
-    for (const radio of travelModeRadios) {
-      if (radio.checked) {
-        selectedTravelMode = radio.value;
-        break;
-      }
+  let selectedOrigin = window.selectedOrigin || window.currentLocation || originInput; // defaults to the user's current location
+  let selectedDestination = window.selectedDestination || center_bald || destinationInput; // defaults to euagellobill
+
+  for (const radio of travelModeRadios) {
+    if (radio.checked) {
+      selectedTravelMode = radio.value;
+      break;
     }
+  }
 
-    // Get directions to the place
-    // console.log("Origin", selectedOrigin);
-    // console.log("Destination", selectedDestination);
-    // console.log("selectedTravelMode", selectedTravelMode);
-    clearDirections();
-    clearMarkers();
-    getDirections(selectedOrigin, selectedDestination, selectedTravelMode);
+  // Get directions to the place
+  // console.log("Origin", selectedOrigin);
+  // console.log("Destination", selectedDestination);
+  // console.log("selectedTravelMode", selectedTravelMode);
+  clearDirections();
+  clearMarkers();
+  getDirections(selectedOrigin, selectedDestination, selectedTravelMode);
 }
 
 // Function to clear directions
@@ -475,11 +500,23 @@ async function toggleAirQuality() {
 }
 
 
-// Initialize the map
+// INITIALIZE THE MAP AND ITS CONTROLS
 async function initMap() {
 
   //// Initialize the map
-  const { Map } = await google.maps.importLibrary("maps");
+  const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+  const {AdvancedMarkerElement, PinElement} = await google.maps.importLibrary("marker");
+
+  //// Get the info window
+  infoWindow = new InfoWindow();
+
+  //// Get the user's current location and store it in a global variable
+  getCurrentLocation( async () => {
+    console.log("currentLocation", window.currentLocation);
+    const addr = await getAddressFromCoordinates(window.currentLocation); // Get the address of the user's current location
+    console.log("currentAdsress", addr);
+  });
+  
   map = new Map(document.getElementById("map"), {
     center: default_center, // HMTY 38.26469392470636, 21.742012983437373
     zoom: 17,
@@ -497,78 +534,122 @@ async function initMap() {
   //Hide the heatmap by default
   heatmap.setMap(null);
 
-  //// Get the user's current location and store it in a global variable
-  getCurrentLocation(() => {
-    console.log("currentLocation", window.currentLocation);
+  // Origin marker
+  console.log("currentLocation", window.currentLocation);
+  const originMarker = new AdvancedMarkerElement({
+
+    position: default_center,
+    map: map,
+    title: "Origin",
+    content: new PinElement({
+      glyph: "🏠",
+      scale: 1.5,
+    }).element,
+    gmpDraggable: true,
+  }); 
+  //////////////////////////
+  originMarker.addListener("dragend", async () => {
+    const pos = originMarker.position
+    window.selectedOrigin = pos;
+    const addr = await getAddressFromCoordinates(pos); 
+    var originInput = document.getElementById("origin_input");
+    originInput.value = addr;
   });
+  //////////////////////////
 
-  //// Get the info window
-  infoWindow = new google.maps.InfoWindow();
+  // Destination marker
+  console.log("center_bald", center_bald);
+  const destinationMarker = new AdvancedMarkerElement({
+    position: center_bald,
+    map: map,
+    title: "Destination",
+    content: new PinElement({
+      glyph: "🏢",
+      scale: 1.5,
+    }).element,
+    gmpDraggable: true,
+  }); 
+  //////////////////////////
+  destinationMarker.addListener("dragend", async () => {
+    const pos = destinationMarker.position
+    window.selectedDestination = pos;
+    const addr = await getAddressFromCoordinates(pos); 
+    var destinationInput = document.getElementById("destination_input");
+    destinationInput.value = addr;
+  });
+  //////////////////////////
 
-  
   // Debounced version of nearbySearch
   const debouncedNearbySearch = debounce(() => {
     nearbySearchPlace();
   }, 500); // Adjust the delay as needed (e.g., 1000ms)
 
   /////// MAP CONTROLS
-
   //// TOP LEFT CONTROLS
   const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
   map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
 
   // Listeners for the search bar
-  // ORIGIN
-  // When typing in the search bar
+  // ORIGIN //
+  // When typing in the search bar DOESNT WORK
   document
     .getElementById("origin_input")
-    .addEventListener("input", autoCompleteOriginDestination);
+    .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
 
   //When the search bar is focused
+  let focusCountOrigin = 0;
   document
     .getElementById("origin_input")
     .addEventListener("focus", async function() {
     // console.log("focus");
+    focusCountOrigin++;
+    console.log("focusCount", focusCountOrigin);
     var results = document.getElementById("results");
     results.style.display = "flex";
     results.style.flexDirection = "row";
     // Get the nearby places accourding to the user's location
-    const nearbyOrigins = await nearbySearchPlace();
-    nearbyOrigins.forEach((place, index) => {console.log("place", place.displayName);})
+    //  Only the first time the search bar is focused
+    if (focusCountOrigin === 1) {
+      autoCompleteOriginDestination(selectionFlag = 1);
+    }
   });
 
   //When the search bar is unfocused
   document
     .getElementById("origin_input")
     .addEventListener("blur", async function() {
-    // console.log("blur");
+    console.log("origin blur");
     // var results = document.getElementById("results");
     // results.style.display = "none";
   });
 
-  // DESTINATION
-  // When typing in the search bar
+  // DESTINATION //
+  // When typing in the search bar DOESNT WORK
   document
     .getElementById("destination_input")
-    .addEventListener("input", autoCompleteOriginDestination);
+    .addEventListener("input", autoCompleteOriginDestination(selectionFlag = 0));
 
   //When the search bar is focused
+  let focusCountDestination = 0;
   document
     .getElementById("destination_input")
     .addEventListener("focus", async function() {
     // console.log("focus");
+    focusCountDestination++;
     var results = document.getElementById("results");
     results.style.display = "flex";
     results.style.flexDirection = "row";
-    // Get the nearby places accourding to the user's location
-    // nearbySearch();
+    if (focusCountDestination === 1){
+      autoCompleteOriginDestination(selectionFlag = 1);
+    };
+    
   });
 
   //When the search bar is unfocused
   document
     .getElementById("destination_input")
     .addEventListener("blur", async function() {
-    // console.log("blur");
+    console.log("destination blur");
     // var results = document.getElementById("results");
     // results.style.display = "none";
   });
@@ -582,9 +663,15 @@ async function initMap() {
       if (target.classList.contains("result")) {
         const buttonName = target.textContent;
         console.log("origin clicked:", buttonName);
+        // Select the origin
         window.selectedOrigin = buttonName;
+        // Display the new origin in the input
         const originInput = document.getElementById("origin_input");
-        originInput.textContent = buttonName;
+        originInput.value = buttonName;
+
+        // Move the pin to the selected origin
+        const coords = await getCoordsFromPlaceName(buttonName);
+        originMarker.position = coords;
       }
   });
 
@@ -596,12 +683,16 @@ async function initMap() {
       if (target.classList.contains("result")) {
         const buttonName = target.textContent;
         console.log("destination clicked:", buttonName);
+        // Select the destination
         window.selectedDestination = buttonName;
+        // Display the new destination in the input
         const destinationInput = document.getElementById("destination_input");
-        destinationInput.textContent = buttonName;
+        destinationInput.value = buttonName;
+
+        const coords = await getCoordsFromPlaceName(buttonName);
+        destinationMarker.position = coords;
       }
   });
-
 
   // Listener for the "GET DIRECTIONS" button
   // Get directions to a place
@@ -652,9 +743,9 @@ async function initMap() {
 
 
 //Proper loading of Google Maps API
-document.addEventListener("GoogleMapsLoaded", function () {
+document.addEventListener("GoogleMapsLoaded", async function () {
   console.log("🚀 Google Maps API is ready. Initializing map...");
-  initMap();
+  await initMap();
 });
 
 

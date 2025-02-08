@@ -263,7 +263,7 @@ a {
 }
 
 .search-input{
-  width: 200px;
+  width: max-content;
   font-size: 16px;
   font-family: "Lexend", sans-serif;
   color:#333333;
