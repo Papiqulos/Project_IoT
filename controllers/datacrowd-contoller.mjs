@@ -91,10 +91,13 @@ export async function checkAdmin(req, res, next) {
     try {
         const role = await model.getRoleFromUsername(req.session.loggedUserId);
         if (role.role === 'admin') {
+            console.log("Admin access granted");
             next();
         }
         else {
-            res.redirect('/home');
+            console.log("Admin access denied, Keep Yourself Safe");
+            res.render("message", { message: "Admin access denied, Keep Yourself Safe" });
+            // res.redirect('/home');
         }
     }
     catch (error) {

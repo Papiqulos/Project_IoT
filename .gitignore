@@ -13,3 +13,5 @@ style.css
 /node_modules
 test.mjs
 test.txt
+public/js/misc.js
+TODO.txt

@@ -1,7 +1,7 @@
 *{
   margin: 0;
   padding: 0;
-  font-family: "Lexend", sans-serif;
+  font-family: "JetBrains Mono", monospace;
 }
 
 html
@@ -394,6 +394,27 @@ a {
 .general-button-container .btn{
   width: 90%;
 }
+
+.air-quality-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.dropdown-content {
+  display: flex;
+  flex-direction: column;
+  background-color: #f1f1f1;
+  border-radius: 6px;
+  box-shadow: rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, rgba(58, 65, 111, .5) 0 -3px 0 inset;
+  background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+}
+
 
 
 /* LOGIN/REGISTER Forms */
