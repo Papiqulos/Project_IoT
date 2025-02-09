@@ -247,17 +247,10 @@ a {
   flex-direction: column;
 }
 
-.input-container{
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  /* margin: 100px; */
-}
-
-.search-results{
+.search-controls{
   --padding: 18px;
-  width: max-content;
+  width: fit-content;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,6 +272,12 @@ a {
   justify-content: center;
   align-items: center;
   margin: 10px 0 10px 0;
+}
+
+@media (max-width: 768px) {
+  .search{
+    flex-direction: column;
+  }
 }
 
 .travel-mode-controls{
@@ -321,6 +320,104 @@ a {
 .radio-container input:checked + img {
   border-color: #3C4FE0;
   box-shadow: 0 0 5px #3C4FE0;
+}
+
+.times-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 10px;
+}
+
+.time-container {
+  display: flex;
+  width: max-content;
+  height: max-content;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+}
+
+.date-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+}
+
+label {
+  font-size: 18px;
+  color: #0044cc;
+  font-weight: bold;
+}
+
+input[type="date"] {
+  padding: 8px;
+  font-size: 16px;
+  border: 2px solid #0044cc;
+  border-radius: 8px;
+  color: #0044cc;
+  background-color: white;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+input[type="date"]:hover {
+  border-color: #002080;
+  box-shadow: 0 0 8px rgba(0, 0, 255, 0.3);
+}
+
+input[type="date"]:focus {
+  border-color: #002080;
+  box-shadow: 0 0 8px rgba(0, 0, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .times-container{
+    flex-direction: column;
+  }
+  .time-container{
+    width: 100%;
+  }
+}
+
+label {
+  font-size: 18px;
+  color: #3c4fe0;
+  font-weight: bold;
+}
+
+input[type="time"] {
+  padding: 8px;
+  font-size: 16px;
+  border: 2px solid #0044cc;
+  border-radius: 8px;
+  color: #0044cc;
+  background-color: white;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+input[type="time"]:hover {
+  border-color: #002080;
+  box-shadow: 0 0 8px rgba(0, 0, 255, 0.3);
+}
+
+input[type="time"]:focus {
+  border-color: #002080;
+  box-shadow: 0 0 8px rgba(0, 0, 255, 0.5);
 }
 
 .results{

@@ -1,0 +1,34 @@
+<div class="top-center-controls">
+        <div class="top-button-container">
+            <button onclick="location.href='/home'" class="btn">&#8962; Home</button>
+            <button
+                id="monitoringButton"
+                class="btn"
+            >Monitoring</button>
+            <button
+                id="analyticsButton"
+                class="btn"
+            >Analytics</button>
+            <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+        </div>
+        
+      <div id="analyticsSearchBar" class="search-results" style="display:none;">
+
+          <div class="search">
+            <span class="search-icon material-symbols-outlined">
+              <a href="#">
+                <img src="/images/search.svg" alt="search" />
+              </a>
+            </span>
+            <input
+              class="search-input"
+              id="areaInput"
+              type="seach"
+              name="query"
+              placeholder="e.g. Πλατεία Γεωργίου"
+            />
+          </div>
+          <button class="btn" id="find-place-analytics" type="submit">Get Analytics</button>
+
+        </div>
+    </div>

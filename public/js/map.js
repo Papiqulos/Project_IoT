@@ -5,7 +5,11 @@ let map,
   selectedOrigin,
   selectedDestination,
   currentLocation,
-  currentDirections;
+  currentDirections,
+  selectedDepartureTime,
+  selectedArrivalTime,
+  selectedDepartureDate,
+  selectedArrivalDate;
 let currentTotalAirQuality = [];
 let markers = [];
 const center_bald = { lat: 38.23666252117088, lng: 21.732572423403976 }; // euagellobill
@@ -27,6 +31,14 @@ function componentToHex(c) {
 
 function rgbToHex(r, g, b) {
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function getSelectedTimeDateObj(selectedDate, selectedTime) {
+  // Make a Date obj out of the selected time and date;
+  const dateTimeStr = `${selectedDate}T${selectedTime}:00`; // Adds seconds for full ISO format
+
+  // Create a Date object and return it
+  return new Date(dateTimeStr);
 }
 
 // USER LOCATION
@@ -266,7 +278,7 @@ async function textSearchPlace(text, results = 15) {
 
 // DIRECTONS
 // Get directions and intermediate markers from an origin to a destination with a specific travel mode
-async function getDirections(origin, destination, travelMode = "DRIVING") {
+async function getDirections(origin, destination, travelMode = "DRIVING", departureTime = new Date(), arrivalTime = getSelectedTimeDateObj(selectedArrivalDate, selectedArrivalTime)) {
   // Clear any existing directions
   clearDirections();
   // Clear any existing markers
@@ -278,11 +290,24 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
   console.log("origin", origin);
   console.log("destination", destination);
   console.log("travelMode", travelMode);
+  console.log("departureTime", departureTime);
+  console.log("arrivalTime", arrivalTime);
   var request = {
     origin: origin,
     destination: destination,
     travelMode: travelMode,
   };
+  if (travelMode === google.maps.TravelMode.DRIVING) {
+    request.drivingOptions = {
+      departureTime: departureTime, // Set to current time or any specific time
+      trafficModel: 'bestguess', // Other options: 'pessimistic', 'optimistic'
+    };
+  } else if (travelMode === google.maps.TravelMode.TRANSIT) {
+    request.transitOptions = {
+      departureTime: departureTime, // Set departure time
+      // arrivalTime: new Date('2024-02-08T15:30:00'), // Uncomment to use arrival time instead
+    };
+  }
   directionsService.route(request, async function (result, status) {
     if (status == "OK") {
       directionsRenderer.setDirections(result);
@@ -664,6 +689,40 @@ async function initMap() {
     document
       .getElementById("get_directions")
       .addEventListener("click", showDirections);
+
+
+    var departureTimeElement = document.getElementById("departureTime");
+    var arrivalTimeElement = document.getElementById("arrivalTime");
+    // Listener for the departure time
+    departureTimeElement
+    .addEventListener("change", () => {
+      console.log("departureTime changed to", departureTimeElement.value);
+      selectedDepartureTime = departureTimeElement.value;
+    });
+
+    // Listener for the arrival time
+    arrivalTimeElement
+    .addEventListener("change", () => {
+      console.log("arrivalTime changed to", arrivalTimeElement.value);
+      selectedArrivalTime = arrivalTimeElement.value;
+    });
+
+    var departureDateElement = document.getElementById("departureDate");
+    var arrivalDateElement = document.getElementById("arrivalDate");
+    // Listener for the departure date
+    departureDateElement
+    .addEventListener("change", () => {
+      console.log("departureDate changed to", departureDateElement.value);
+      selectedDepartureDate = departureDateElement.value;
+    });
+
+    // Listener for the arrival date
+    arrivalDateElement
+    .addEventListener("change", () => {
+      console.log("arrivalDate changed to", arrivalDateElement.value);
+      selectedArrivalDate = arrivalDateElement.value;
+    });
+
   } else if (userRole === "business") {
     var monitoringButton = document.getElementById("monitoringButton");
     var analyticsButton = document.getElementById("analyticsButton");
