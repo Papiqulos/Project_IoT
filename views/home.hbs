@@ -4,22 +4,12 @@
 <div id="user-role" data-value="{{user.role}}"></div>
 
 {{#if userId}}
-  {{#if_eq user.role 'business'}}
-    {{!-- <h1>Welcome, {{userId}}!</h1> --}}
+    
     {{> user_controls}}
     {{> map }}
-  {{else}}
-
-    {{!-- <div class="greeting">
-      <h1>Welcome, {{userId}}!</h1>
-    </div> --}}
-
-    {{> user_controls}}
-    {{> map }}
-  {{/if_eq}}
   
-
 {{else}}
+
   <div class="greeting-container">
     <h1 class="greeting-text">Welcome to our site!</h1>
     <p class="greeting-text">Please sign in or register to continue.</p>

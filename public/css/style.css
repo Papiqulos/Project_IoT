@@ -153,7 +153,20 @@ a {
   justify-content: center;
   align-items: center;
 }
+/* TOP CENTER CONTROLS */
+.top-center-controls{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
+.top-button-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
 /* GENERAL BUTTON */
 
 /* OLD BUTTON DESIGN */
@@ -215,6 +228,11 @@ a {
 .btn:active {
   box-shadow: #3c4fe0 0 3px 7px inset;
   transform: translateY(2px);
+}
+
+/* AUTOCOMPLETE IS ALWAYS ON TOP */
+.pac-container {
+  z-index: 5000;
 }
 
 /* THE MAP */

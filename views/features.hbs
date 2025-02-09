@@ -1,11 +1,95 @@
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #181818;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: #f5f5f5;
+    border-radius: 20px;
+    padding: 20px;
+    width: 600px;
+}
+
+.card {
+    display: flex;
+    align-items: flex-start;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.icon {
+    font-size: 30px;
+    margin-right: 15px;
+    color: green;
+}
+
+.content {
+    flex: 1;
+}
+
+h3 {
+    margin: 0;
+    color: #333;
+}
+
+p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.subtext {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+}
+</style>
 
 
 <div class="container">
-    <h1>Our Features</h1>
-    {{#each features}}
-    <div class="feature">
-        <h2>{{this.title}}</h2>
-        <p>{{this.description}}</p>
+    <div class="card">
+        <div class="icon">
+            🚍
+        </div>
+        <div class="content">
+            <h3>Inform Public for better decision making</h3>
+            <p>- Real time data and Predictions [heatmaps and graphs]</p>
+            <p>- Suggestions and Alerts</p>
+            <span class="subtext">Commuting citizens using Public Transport</span>
+        </div>
     </div>
-    {{/each}}
+
+    <div class="card">
+        <div class="icon">
+            📊
+        </div>
+        <div class="content">
+            <h3>Monitoring Tools for Authorities & Businesses</h3>
+            <p>- Crowd Overview</p>
+            <p>- Insights for better resource allocation</p>
+            <p>- Alerting and notifying</p>
+            <span class="subtext">Staff scheduling, Efficient police force management, Bus schedule changes</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="icon">
+            🏢
+        </div>
+        <div class="content">
+            <h3>Tools for Long Term Planning</h3>
+            <p>- Insights about urban planning in popular areas</p>
+            <p>- Effectiveness evaluation for measures taken</p>
+            <span class="subtext">More sidewalks, New business locations</span>
+        </div>
+    </div>
 </div>
