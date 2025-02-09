@@ -35,7 +35,7 @@ body{
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(182, 182, 182);
+  background-image: radial-gradient(100% 100% at 100% 0, #3C4FE0 0, #ffffff 100%);
   z-index: 1000;
   
 
@@ -247,16 +247,18 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  /* margin: 100px; */
 }
 
 .search-results{
-  --padding: 14px;
+  --padding: 18px;
   width: max-content;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: var(--padding);
   border-radius: 28px;
+  justify-content: space-between;
   background: #f6f6f6;
 
   margin: 10px;
@@ -271,6 +273,49 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  margin: 10px 0 10px 0;
+}
+
+.travel-mode-controls{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.radio{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.radio-container {
+  display: inline-block;
+  cursor: pointer;
+  margin: 10px;
+}
+
+/* Hide default radio button */
+.radio-container input {
+  display: none;
+}
+
+/* Style the image */
+.radio-container img {
+  width: 20px; /* Adjust size */
+  height: 20px;
+  border: 2px solid transparent;
+  border-radius: 10px; /* Optional */
+  transition: 0.3s;
+}
+
+/* Highlight when selected */
+.radio-container input:checked + img {
+  border-color: #3C4FE0;
+  box-shadow: 0 0 5px #3C4FE0;
 }
 
 .results{

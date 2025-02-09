@@ -32,7 +32,7 @@ async function getCurrentLocation(callback) {
   }
 }
 // Center the map on the user's current location
-function toggleCurrentLocation() {
+async function toggleCurrentLocation() {
   infoWindow = new google.maps.InfoWindow();
   infoWindow.setPosition(window.currentLocation);
   infoWindow.setContent("Location found.");

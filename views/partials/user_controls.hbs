@@ -84,29 +84,39 @@
 
             <div class="travel-mode-controls">
 
-              <input
-                type="radio"
-                class="radio"
-                id="radio-1"
-                name="travel_mode"
-                value="DRIVING"
-              />DRIVING
+                <label class="radio-container">
+                    <input
+                        type="radio"
+                        class="radio"
+                        id="radio-1"
+                        name="travel_mode"
+                        value="DRIVING"
+                    />
+                    <img src="/images/directions_car.svg" alt="driving" />
+                </label>
 
-              <input
-                type="radio"
-                class="radio"
-                id="radio-2"
-                name="travel_mode"
-                value="WALKING"
-              />WALKING
+                <label class="radio-container">
+                    <input
+                        type="radio"
+                        class="radio"
+                        id="radio-2"
+                        name="travel_mode"
+                        value="WALKING"
+                    />
+                    <img src="/images/directions_walk.svg" alt="walking" />
+                </label>
 
-              <input
-                type="radio"
-                class="radio"
-                id="radio-3"
-                name="travel_mode"
-                value="TRANSIT"
-              />TRANSIT
+                <label class="radio-container">
+
+                    <input
+                        type="radio"
+                        class="radio"
+                        id="radio-3"
+                        name="travel_mode"
+                        value="TRANSIT"
+                    />
+                    <img src="/images/directions_transit.svg" alt="transit" />
+                </label>
 
             </div>
             <button class="btn" id="get_directions" type="submit">Get Directions</button>
