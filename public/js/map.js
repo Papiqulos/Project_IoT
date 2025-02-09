@@ -285,6 +285,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
         try {
           const steps = result.routes[0].legs[0].steps;
           if (steps) {
+            currentTotalAirQuality = [];
             steps.forEach(async (step, i) => {
               const path = step.path;
               const middlePoint = path[Math.floor(path.length / 2)];
@@ -294,6 +295,8 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
               const aqi = fetchedData.indexes[0].aqi;
               const aqiColor = fetchedData.indexes[0].color;
               const aqiCategory = fetchedData.indexes[0].category;
+              // Clear the previous air quality data
+              
               currentTotalAirQuality.push({aqi, aqiColor, aqiCategory});
               console.log("currentTotalAirQuality", currentTotalAirQuality.length);
               // console.log(i, aqi, aqiColor, aqiCategory);
@@ -311,7 +314,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING") {
 
               const pin = new PinElement({
                 glyph: `${i + 1}`,
-                scale: 1.5,
+                scale: 0.5,
                 background: backgroundColor,
               });
 
@@ -361,6 +364,7 @@ async function showDirections() {
       break;
     }
   }
+
 
   // Get directions to the place
   // console.log("Origin", selectedOrigin);
@@ -436,7 +440,7 @@ async function toggleAirQuality() {
       const airQualityContainer = document.createElement("div");
       airQualityContainer.classList.add("air-quality-container");
 
-      // Get the average air quality for the selected route
+      // Get the average air quality and its category for the selected route
       let totalAqi = 0;
       let totalAqiCategory = [];
 
@@ -485,6 +489,15 @@ async function toggleAirQuality() {
 // INITIALIZE THE MAP AND ITS CONTROLS
 async function initMap() {
 
+
+  const userIdElemenent = document.getElementById("user-id");
+  const userId = userIdElemenent.getAttribute("data-value");
+  console.log("username: ", userId); // Outputs the Handlebars variable
+
+  const userRoleElemenent = document.getElementById("user-role");
+  const userRole = userRoleElemenent.getAttribute("data-value");
+  console.log("user role: ", userRole); // Outputs the Handlebars variable
+
   //// Initialize the map
   const { Map, InfoWindow } = await google.maps.importLibrary("maps");
   const {AdvancedMarkerElement, PinElement} = await google.maps.importLibrary("marker");
@@ -527,138 +540,152 @@ async function initMap() {
   //Hide the heatmap by default
   heatmap.setMap(null);
 
-  // Origin marker
-  console.log("default_center", window.currentLocation);
-  const originMarker = new AdvancedMarkerElement({
+  if (userRole === "citizen") {
 
-    position: window.currentLocation,
-    map: map,
-    title: "Origin",
-    content: new PinElement({
-      glyph: "🏠",
-      scale: 1.5,
-    }).element,
-    gmpDraggable: true,
-  }); 
-  //////////////////////////
-  originMarker.addListener("dragend", async () => {
-    const pos = originMarker.position
-    window.selectedOrigin = pos;
-    const addr = await getAddressFromCoordinates(pos); 
+    // Origin marker
+    console.log("default_center", window.currentLocation);
+    const originMarker = new AdvancedMarkerElement({
+
+      position: window.currentLocation,
+      map: map,
+      title: "Origin",
+      content: new PinElement({
+        glyph: "🏠",
+        scale: 1.5,
+      }).element,
+      gmpDraggable: true,
+    }); 
+    //////////////////////////
+    originMarker.addListener("dragend", async () => {
+      const pos = originMarker.position
+      window.selectedOrigin = pos;
+      const addr = await getAddressFromCoordinates(pos); 
+      var originInput = document.getElementById("origin_input");
+      originInput.value = addr;
+    });
+    //////////////////////////
+
+    // Destination marker
+    const destinationMarker = new AdvancedMarkerElement({
+      position: center_bald,
+      map: map,
+      title: "Destination",
+      content: new PinElement({
+        glyph: "🏢",
+        scale: 1.5,
+      }).element,
+      gmpDraggable: true,
+    }); 
+    //////////////////////////
+    destinationMarker.addListener("dragend", async () => {
+      const pos = destinationMarker.position
+      window.selectedDestination = pos;
+      const addr = await getAddressFromCoordinates(pos); 
+      var destinationInput = document.getElementById("destination_input");
+      destinationInput.value = addr;
+    });
+    //////////////////////////
+
+    // Center the map on the origin and destination markers
+    // map.setCenter(originMarker.position);
+    // map.setCenter(destinationMarker.position);
+
+    /////// MAP CONTROLS
+    //// TOP LEFT CONTROLS
+    const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
+
+    // Listeners for the search bar
+    const options = {
+      bounds: defaultBounds,
+      componentRestrictions: { country: "gr" },
+      fields: ["address_components", "geometry", "icon", "name"],
+      strictBounds: false,
+    };
+    // ORIGIN //
     var originInput = document.getElementById("origin_input");
-    originInput.value = addr;
-  });
-  //////////////////////////
+    const autocompleteOrigin = new google.maps.places.Autocomplete(originInput, options);
+    autocompleteOrigin
+      .addListener("place_changed", () => {
+        const place = autocompleteOrigin.getPlace();
+        // console.log(place.geometry.location);
+        originMarker.position = place.geometry.location;
+        // selectedOrigin = place.geometry.location;
+        // console.log("place changed");
+    });
 
-  // Destination marker
-  const destinationMarker = new AdvancedMarkerElement({
-    position: center_bald,
-    map: map,
-    title: "Destination",
-    content: new PinElement({
-      glyph: "🏢",
-      scale: 1.5,
-    }).element,
-    gmpDraggable: true,
-  }); 
-  //////////////////////////
-  destinationMarker.addListener("dragend", async () => {
-    const pos = destinationMarker.position
-    window.selectedDestination = pos;
-    const addr = await getAddressFromCoordinates(pos); 
+    // DESTINATION //
     var destinationInput = document.getElementById("destination_input");
-    destinationInput.value = addr;
-  });
-  //////////////////////////
-
-  // Center the map on the origin and destination markers
-  // map.setCenter(originMarker.position);
-  // map.setCenter(destinationMarker.position);
-
-  /////// MAP CONTROLS
-  //// TOP LEFT CONTROLS
-  const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
-  map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
-
-  // Listeners for the search bar
-  const options = {
-    bounds: defaultBounds,
-    componentRestrictions: { country: "gr" },
-    fields: ["address_components", "geometry", "icon", "name"],
-    strictBounds: false,
-  };
-  // ORIGIN //
-  var originInput = document.getElementById("origin_input");
-  const autocompleteOrigin = new google.maps.places.Autocomplete(originInput, options);
-  autocompleteOrigin
-    .addListener("place_changed", () => {
-      const place = autocompleteOrigin.getPlace();
-      // console.log(place.geometry.location);
-      originMarker.position = place.geometry.location;
-      // console.log("place changed");
-  });
-
-  // DESTINATION //
-  var destinationInput = document.getElementById("destination_input");
-  const autocompleteDestination = new google.maps.places.Autocomplete(destinationInput, options);
-  autocompleteDestination
-    .addListener("place_changed", () => {
-      const place = autocompleteDestination.getPlace();
-      // console.log(place.geometry.location);
-      destinationMarker.position = place.geometry.location;
-      // console.log("place changed");
-  });
+    const autocompleteDestination = new google.maps.places.Autocomplete(destinationInput, options);
+    autocompleteDestination
+      .addListener("place_changed", () => {
+        const place = autocompleteDestination.getPlace();
+        // console.log(place.geometry.location);
+        destinationMarker.position = place.geometry.location;
+        // selectedDestination = place.geometry.location;
+        // console.log("place changed");
+    });
 
 
-  
+    
 
-  // Listener for the "GET DIRECTIONS" button
-  // Get directions to a place
-  document
-    .getElementById('get_directions')
-    .addEventListener('click', showDirections);
+    // Listener for the "GET DIRECTIONS" button
+    // Get directions to a place
+    document
+      .getElementById('get_directions')
+      .addEventListener('click', showDirections);
 
 
-  //// TOP RIGHT CONTROLS
-  const topRightControls = document.getElementById("top-right-controls"); //get the top right controls container
-  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(topRightControls); //push the top right controls container to the top right of the map
+    //// TOP RIGHT CONTROLS
+    const topRightControls = document.getElementById("top-right-controls"); //get the top right controls container
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(topRightControls); //push the top right controls container to the top right of the map
 
-  // Listener for the "PAN TO CURRENT LOCATION" button
-  // Pans the map to the user's current location
-  document
-    .getElementById("locationButton")
-    .addEventListener("click", toggleCurrentLocation);
-  
-  // Listener for the "HEATMAPS" button
-  // Toggles the heatmap on the map
-  document
-    .getElementById('heatmaps_button')
-    .addEventListener('click', toggleHeatmap);
+    // Listener for the "PAN TO CURRENT LOCATION" button
+    // Pans the map to the user's current location
+    document
+      .getElementById("locationButton")
+      .addEventListener("click", toggleCurrentLocation);
+    
+    // Listener for the "HEATMAPS" button
+    // Toggles the heatmap on the map
+    document
+      .getElementById('heatmaps_button')
+      .addEventListener('click', toggleHeatmap);
 
-  // Listener for the "✉️" button
-  // Relative information about the user's nearby places and their air quality
-  document
-    .getElementById("infoButton")
-    .addEventListener("click", toggleAirQuality);
-  
-  // Misc listeners for various heatmap options
-  document
-    .getElementById("change-gradient")
-    .addEventListener("click", changeGradient);
-  document
-    .getElementById("change-opacity")
-    .addEventListener("click", changeOpacity);
-  document
-    .getElementById("change-radius")
-    .addEventListener("click", changeRadius);
+    // Listener for the "✉️" button
+    // Relative information about the user's nearby places and their air quality
+    document
+      .getElementById("infoButton")
+      .addEventListener("click", toggleAirQuality);
+    
+    // Misc listeners for various heatmap options
+    document
+      .getElementById("change-gradient")
+      .addEventListener("click", changeGradient);
+    document
+      .getElementById("change-opacity")
+      .addEventListener("click", changeOpacity);
+    document
+      .getElementById("change-radius")
+      .addEventListener("click", changeRadius);
 
-  // Listeners for map actions
-  map.addListener("dragend", () => {  
-    console.log("dragend");
-    }
-  );
+    // Listeners for map actions
+    map.addListener("dragend", () => {  
+      console.log("dragend");
+      }
+    );
+  }
+  else if (userRole === "business") {
+    console.log("Business role detected");
+    
+  }
+  else if (userRole === "admin") {
+    console.log("Admin role detected");
+  }
+  else {
+    console.log("No role detected KeepYourselfSafe");
+  }
 }
-
 
 //Proper loading of Google Maps API
 document.addEventListener("GoogleMapsLoaded", async function () {
