@@ -58,7 +58,7 @@ export let getAirQualityData = async function (googleApiKey, location) {
   };
 
 //Create a new user
-export let registerUser = async function (username, password, role) {
+export let registerUser = async function (username, password, role, email, phone_number) {
     // ελέγχουμε αν υπάρχει χρήστης με αυτό το username
     const userId = await getUserByUsername(username);
 
@@ -79,8 +79,8 @@ export let registerUser = async function (username, password, role) {
             const hashedPassword = await bcrypt.hash(password, 10);
             
             // Add to User table
-            const stmt = await sql.prepare('INSERT INTO user VALUES (?, ?, ?)');
-            const info = await stmt.run(username, hashedPassword, role);
+            const stmt = await sql.prepare('INSERT INTO User VALUES (?, ?, ?, ?, ?)');
+            const info = await stmt.run(hashedPassword, username, role, email, phone_number);
 
             return info.lastID;
         } 
@@ -90,15 +90,52 @@ export let registerUser = async function (username, password, role) {
     }
 }
 
-//Create a new business
-export let registerBusiness = async function (username, 
+//Create a new citizen
+export let registerCitizen = async function (citizenName, 
+                                            citizenAddress, 
+                                            citizenZIP, 
+                                            citizenCity, 
+                                            citizenUsername) {
+    console.log('registerCitizen');
+    try{
+        
+        // Add to Citizen table
+        const stmt = await sql.prepare('INSERT INTO Citizen ( name, address,username, ZIP, city) VALUES (?, ?, ?, ?, ?)');
+        const info = await stmt.run(citizenName, citizenAddress, citizenUsername,citizenZIP, citizenCity);
+        return info.lastID;
+        
+    }
+    catch (error) {
+        throw Error('Error registering citizen: ' + error);
+    }
+}
+
+//Create a new business///////////////////////////////////
+export let registerBusiness = async function (businessAddress, 
                                               businessName, 
                                               businessType, 
-                                              businessAddress, 
-                                              businessPhone, 
-                                              businessEmail,
-                                              selectedProvisions) {
+                                              businessUsername,
+                                              businessZIP,
+                                              businessCity) {
+    
     console.log('registerBusiness');
+    try{
+        //Check if the business already exists
+        const business = await sql.get('SELECT * FROM business WHERE name = ?', businessName);
+        if (business != undefined) {
+            return { message: "Business already exists" };
+        } 
+        else {
+            // Add to Business table
+            const stmt = await sql.prepare('INSERT INTO Business ( address, name, type, username, ZIP, city) VALUES (?, ?, ?, ?, ?, ?)');
+            const info = await stmt.run(businessAddress, businessName, businessType, businessUsername, businessZIP, businessCity);
+            return info.lastID;
+        }
+    }
+    catch (error) {
+        throw Error('Error registering business: ' + error);
+    }
+    
 }
 
 export let getUserByUsername = async function (username){

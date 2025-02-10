@@ -8,10 +8,15 @@ export let showRegisterForm = function (req, res) {
 
 }
 
-//Register a new user///////////////////////////////
+//Register a new user
 export let doRegister = async function (req, res) {
     try {
-        const registrationResult = await userModel.registerUser(req.body.username, req.body.password, req.body.role);
+        const registrationResult = await userModel.registerUser(req.body.username, 
+                                                                req.body.password, 
+                                                                req.body.role, 
+                                                                req.body.email, 
+                                                                req.body.phone_number);
+        console.log("role", req.body.role);
         if (registrationResult.message === "Υπάρχει ήδη χρήστης με αυτό το όνομα") {
             console.log("user already exists");
             res.render('register', {layout: 'main', message: "user already exists"});
@@ -20,8 +25,16 @@ export let doRegister = async function (req, res) {
             console.log("You can't become an admin. KeepYourselfSafe");
             res.render('message', {layout: 'main', message: "You can't become an admin. KeepYourselfSafe"});
         }
-        else {
+        else if (req.body.role === 'business') {
+            req.session.loggedUserId = req.body.username;
             res.redirect('/register_business');
+        }
+        else if (req.body.role === 'citizen') { 
+            req.session.loggedUserId = req.body.username;
+            res.redirect('/register_citizen');
+        }
+        else {
+            res.redirect('/login');
         }
     } 
     catch (error) {
@@ -38,21 +51,47 @@ export let showRegisterBusinessForm = function (req, res) {
     
 }
 
-//Register a new business////////////////////////////////
+//Register a new business
 export let doRegisterBusiness = async function (req, res) {
     try {
-        const registrationResult = await userModel.registerBusiness(req.body.username, 
+        const registrationResult = await userModel.registerBusiness(req.body.businessAddress, 
                                                                     req.body.businessName, 
-                                                                    req.body.businessType, 
-                                                                    req.body.businessAddress, 
-                                                                    req.body.businessPhone, 
-                                                                    req.body.businessEmail,
-                                                                    req.body.businessWebsite,
-                                                                    req.body.businessDescription,
-                                                                    req.body.selectedProvisions);
+                                                                    req.body.businessType,
+                                                                    req.session.loggedUserId,
+                                                                    req.body.businessZIP,
+                                                                    req.body.businessCity,
+                                                                    );
         if (registrationResult.message) {
             console.log("business already exists");
-            res.render('register_business', {layout: 'main', message: "business already exists"});
+            res.render('register_business', {layout: 'main', message: "Business already exists"});
+        }
+        else {
+            res.redirect('/login');
+        }
+    } 
+    catch (error) {
+        console.error('registration error: ' + error);
+
+        res.render('home', {layout: 'main', message: "registration error"})
+    }
+}
+
+//Show the register as a citizen form
+export let showRegisterCitizenForm = function (req, res) {
+    res.render('register_citizen', {layout: 'main'});
+}
+
+//Register a new citizen
+export let doRegisterCitizen = async function (req, res) {
+    try {
+        const registrationResult = await userModel.registerCitizen(req.body.citizenName, 
+                                                                   req.body.citizenAddress, 
+                                                                   req.body.citizenZIP, 
+                                                                   req.body.citizenCity, 
+                                                                   req.session.loggedUserId);
+        if (registrationResult.message) {
+            console.log("citizen already exists");
+            res.render('register_citizen', {layout: 'main', message: "Citizen already exists"});
         }
         else {
             res.redirect('/login');

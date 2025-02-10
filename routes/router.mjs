@@ -47,8 +47,14 @@ router.route('/logout').get(logInController.doLogout);
 router.route('/register').get(logInController.checkAuthenticated, logInController.showRegisterForm);
 //Register the user
 router.post('/register', logInController.doRegister);
+
+//Show the register as a citizen form
+router.route('/register_citizen').get(logInController.showRegisterCitizenForm);
+//Register the user as a citizen
+router.post('/register_citizen', logInController.doRegisterCitizen);
+
 // Show the register as a business form
-router.route('/register_business').get(logInController.checkAuthenticated, logInController.showRegisterBusinessForm);
+router.route('/register_business').get(logInController.showRegisterBusinessForm);
 //Register the user as a business
 router.post('/register_business', logInController.doRegisterBusiness);
 
