@@ -613,15 +613,18 @@ async function initMap() {
       }).element,
       gmpDraggable: true,
     });
-    //////////////////////////
+    
     originMarker.addListener("dragend", async () => {
       const pos = originMarker.position;
       window.selectedOrigin = pos;
+      bounds.extend(originMarker.position);
+      bounds.extend(destinationMarker.position);
+      map.fitBounds(bounds);
       const addr = await getAddressFromCoordinates(pos);
       var originInput = document.getElementById("origin_input");
       originInput.value = addr;
     });
-    //////////////////////////
+    
 
     // Destination marker
     const destinationMarker = new AdvancedMarkerElement({
@@ -634,18 +637,22 @@ async function initMap() {
       }).element,
       gmpDraggable: true,
     });
-    //////////////////////////
+    
     destinationMarker.addListener("dragend", async () => {
       const pos = destinationMarker.position;
       window.selectedDestination = pos;
+      bounds.extend(originMarker.position);
+      bounds.extend(destinationMarker.position);
+      map.fitBounds(bounds);
       const addr = await getAddressFromCoordinates(pos);
       var destinationInput = document.getElementById("destination_input");
       destinationInput.value = addr;
     });
-    //////////////////////////
+    
     bounds.extend(originMarker.position);
     bounds.extend(destinationMarker.position);
     map.fitBounds(bounds);
+    
     /////// MAP CONTROLS
     //// TOP LEFT CONTROLS
     const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
