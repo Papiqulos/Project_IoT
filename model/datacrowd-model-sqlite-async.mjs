@@ -69,6 +69,12 @@ export let registerUser = async function (username, password, role) {
     //If the user does not exist
     else {
         try {
+            
+            //Check if the role is admin
+            if (role == 'admin') {
+                return { message: "You can't become an admin. KeepYourselfSafe" };
+            }
+
             // Hash the password
             const hashedPassword = await bcrypt.hash(password, 10);
             
@@ -82,6 +88,17 @@ export let registerUser = async function (username, password, role) {
             throw error;
         }
     }
+}
+
+//Create a new business
+export let registerBusiness = async function (username, 
+                                              businessName, 
+                                              businessType, 
+                                              businessAddress, 
+                                              businessPhone, 
+                                              businessEmail,
+                                              selectedProvisions) {
+    console.log('registerBusiness');
 }
 
 export let getUserByUsername = async function (username){

@@ -2,25 +2,57 @@ import bcrypt from 'bcrypt';
 
 import * as userModel from '../model/datacrowd-model-sqlite-async.mjs';
 
-//Show the login form
-export let showLogInForm = function (req, res) {
-    res.render("login", {layout: 'main'});
-
-}
-
 //Show the register form
 export let showRegisterForm = function (req, res) {
     res.render('register', {layout: 'main'});
 
 }
 
-//Register a new user
+//Register a new user///////////////////////////////
 export let doRegister = async function (req, res) {
     try {
         const registrationResult = await userModel.registerUser(req.body.username, req.body.password, req.body.role);
-        if (registrationResult.message) {
+        if (registrationResult.message === "Υπάρχει ήδη χρήστης με αυτό το όνομα") {
             console.log("user already exists");
             res.render('register', {layout: 'main', message: "user already exists"});
+        }
+        else if (registrationResult.message === "You can't become an admin. KeepYourselfSafe") {
+            console.log("You can't become an admin. KeepYourselfSafe");
+            res.render('message', {layout: 'main', message: "You can't become an admin. KeepYourselfSafe"});
+        }
+        else {
+            res.redirect('/register_business');
+        }
+    } 
+    catch (error) {
+        console.error('registration error: ' + error);
+
+        res.render('home', {layout: 'main', message: "registration error"})
+    }
+}
+
+//Show the register as a business form
+export let showRegisterBusinessForm = function (req, res) {
+    
+    res.render('register_business', {layout: 'main'});
+    
+}
+
+//Register a new business////////////////////////////////
+export let doRegisterBusiness = async function (req, res) {
+    try {
+        const registrationResult = await userModel.registerBusiness(req.body.username, 
+                                                                    req.body.businessName, 
+                                                                    req.body.businessType, 
+                                                                    req.body.businessAddress, 
+                                                                    req.body.businessPhone, 
+                                                                    req.body.businessEmail,
+                                                                    req.body.businessWebsite,
+                                                                    req.body.businessDescription,
+                                                                    req.body.selectedProvisions);
+        if (registrationResult.message) {
+            console.log("business already exists");
+            res.render('register_business', {layout: 'main', message: "business already exists"});
         }
         else {
             res.redirect('/login');
@@ -31,6 +63,12 @@ export let doRegister = async function (req, res) {
 
         res.render('home', {layout: 'main', message: "registration error"})
     }
+}
+
+//Show the login form
+export let showLogInForm = function (req, res) {
+    res.render("login", {layout: 'main'});
+
 }
 
 //Login a user

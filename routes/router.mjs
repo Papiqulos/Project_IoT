@@ -47,5 +47,10 @@ router.route('/logout').get(logInController.doLogout);
 router.route('/register').get(logInController.checkAuthenticated, logInController.showRegisterForm);
 //Register the user
 router.post('/register', logInController.doRegister);
+// Show the register as a business form
+router.route('/register_business').get(logInController.checkAuthenticated, logInController.showRegisterBusinessForm);
+//Register the user as a business
+router.post('/register_business', logInController.doRegisterBusiness);
+
 
 export default router;
