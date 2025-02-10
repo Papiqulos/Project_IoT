@@ -87,8 +87,8 @@ async function initMap() {
             position: { lat: lat, lng: lng },
             map: map,
             content: new PinElement({
-                background: "#FF0000",
-                borderColor: "#FF0000",
+                background: "#e20000",
+                borderColor: "#e20000",
                 glyphColor: "#ffffff",
             }).element,
             gmpClickable: true,

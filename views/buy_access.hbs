@@ -44,9 +44,9 @@
         </div>
 
         <div class="account-page-container">
-            <h1 class="account-header">Your Data Sources</h1>
+            <h1 id="yourData" class="account-header">Your Data Sources</h1>
         {{#each businessSources}}
-            <h1 class="account-header"></h1>
+            {{!-- <h1 class="account-header"></h1> --}}
             <h2 class="account-header">Source ID: {{source_id}}</h2>
             <div class="account-details">
                 <div class="account-attribute">
@@ -64,9 +64,9 @@
         </div>
         
         <div class="account-page-container">
-            <h1 class="account-header">Available Data Sources</h1>
+            <h1 id="availableData" class="account-header">Available Data Sources</h1>
         {{#each availableSources}}
-            <h1 class="account-header"></h1>
+            {{!-- <h1 class="account-header"></h1> --}}
             <h2 class="account-header">Source ID: {{source_id}}</h2>
             <div class="account-details">
                 <div class="account-attribute">
