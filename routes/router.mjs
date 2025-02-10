@@ -33,7 +33,7 @@ router.get('/team', dataCrowdController.ourTeam);
 router.get('/faq', dataCrowdController.faq);
 
 //Secure fetching of the API key
-router.route('/api/key').get(dataCrowdController.getAPIKey);
+router.route('/api/key').get(dataCrowdController.checkAdmin, dataCrowdController.getAPIKey);
 
 //Show the login form
 router.route('/login').get(logInController.checkAuthenticated, logInController.showLogInForm);
