@@ -32,8 +32,17 @@ router.get('/team', dataCrowdController.ourTeam);
 //FAQ page
 router.get('/faq', dataCrowdController.faq);
 
-//Secure fetching of the API key
-router.route('/api/key').get(dataCrowdController.checkAdmin, dataCrowdController.getAPIKey);
+//Secure fetching of the API key //admin fix
+router.route('/api/key').get(dataCrowdController.getAPIKey);
+
+//Buy access to More Sources Page
+router.get('/buy_access', dataCrowdController.buyAccess);
+
+//Delete a source from the business
+router.route('/buy_access/delete/:source_id').get(dataCrowdController.deleteSource);
+
+//Add a source to the business
+router.route('/buy_access/add/:source_id').get(dataCrowdController.addSource);
 
 //Show the login form
 router.route('/login').get(logInController.checkAuthenticated, logInController.showLogInForm);

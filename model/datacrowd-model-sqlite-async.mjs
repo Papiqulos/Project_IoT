@@ -3,6 +3,7 @@ import { Database } from 'sqlite-async';
 import bcrypt from 'bcrypt';
 import axios from 'axios';
 import dotenv from 'dotenv'
+import e from 'express';
 dotenv.config()
 
 let sql;
@@ -110,7 +111,7 @@ export let registerCitizen = async function (citizenName,
     }
 }
 
-//Create a new business///////////////////////////////////
+//Create a new business
 export let registerBusiness = async function (businessAddress, 
                                               businessName, 
                                               businessType, 
@@ -145,5 +146,90 @@ export let getUserByUsername = async function (username){
     } 
     catch (error) {
         throw Error('Error getting user by username: ' + error);
+    }
+}
+
+export let getAllDataSources = async function (){
+    try {
+        const sources = await sql.all('SELECT * FROM Data_Source');
+        return sources;
+    } 
+    catch (error) {
+        throw Error('Error getting all data sources: ' + error);
+    }
+}
+
+// Get the sources that the business has access to
+export let getBusinessSourcesFromBusinessId = async function (businessId){
+    try {
+        const sources = await sql.all(`SELECT Data_Source.type, Data_Source.source_id, Data_Source.location, Business.business_id 
+                                        From Data_Source JOIN Has_Access JOIN Business On Data_Source.source_id = Has_Access.source_id and Business.business_id = Has_Access.business_id 
+                                        WHERE Business.business_id = ?`, businessId);
+        return sources;
+    } 
+    catch (error) {
+        throw Error('Error getting business sources: ' + error);
+    }
+}
+
+// Get the sources that the business does not have access to
+export let getAvailableSourcesFromBusinessId = async function (businessId){
+    try {
+        const sources = await sql.all(`SELECT DISTINCT Data_Source.source_id, Data_Source.type, Data_Source.location 
+                                        From Data_Source JOIN Has_Access JOIN Business On Data_Source.source_id = Has_Access.source_id and Business.business_id = Has_Access.business_id 
+                                        where Business.business_id != ? and  Has_Access.source_id not in 
+                                            (
+                                                SELECT source_id 
+                                                from Has_Access JOIN Business on Business.business_id = Has_Access.business_id 
+                                                where Business.business_id = ?
+                                            )`, businessId, businessId);
+        return sources;
+    } 
+    catch (error) {
+        throw Error('Error getting business sources: ' + error);
+    }
+}
+
+// Add a source to the business
+export let addSourceToBusiness = async function (businessId, sourceId){
+    try {
+        const stmt = await sql.prepare('INSERT INTO Has_Access (business_id, source_id) VALUES (?, ?)');
+        const info = await stmt.run(businessId, sourceId);
+        return info.lastID;
+    } 
+    catch (error) {
+        throw Error('Error adding source to business: ' + error);
+    }
+}
+
+// Delete a source from the business
+export let deleteSourceFromBusiness = async function (businessId, sourceId){
+    try {
+        const stmt = await sql.prepare('DELETE FROM Has_Access WHERE business_id = ? AND source_id = ?');
+        const info = await stmt.run(businessId, sourceId);
+        return info.lastID;
+    } 
+    catch (error) {
+        throw Error('Error deleting source from business: ' + error);
+    }
+}
+
+export let getBusinessByUsername = async function (username){
+    try {
+        const business = await sql.get('SELECT * FROM business WHERE username = ?', username);
+        return business;
+    } 
+    catch (error) {
+        throw Error('Error getting business by username: ' + error);
+    }
+}
+
+export let getCitizenByUsername = async function (username){
+    try {
+        const citizen = await sql.get('SELECT * FROM citizen WHERE username = ?', username);
+        return citizen;
+    } 
+    catch (error) {
+        throw Error('Error getting citizen by username: ' + error);
     }
 }

@@ -4,12 +4,6 @@
   font-family: "JetBrains Mono", monospace;
 }
 
-html
-{
-  height: 100vh;
-  width: 100vw;
-}
-
 :root{
  font-size: 10px;
 }
@@ -17,11 +11,13 @@ html
 /* Smooth Scrolling */
 html{
  scroll-behavior: smooth;
+ height: 100vh;
+  width: 100vw;
 }
 
 body{
-  width: 100vw;
-  height: 100vh;
+  /* width: 100vw; */
+  height: 100%;
   display: flex;
   flex-direction: column;
   text-align: center;
@@ -153,6 +149,116 @@ a {
   justify-content: center;
   align-items: center;
 }
+
+/* BUSINESS BUY ACCESS AND ACCOUNT PAGE*/
+.business-info-container{
+      /* width: 40%; */
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: start;
+      /* margin-top: 5%; */
+      /* padding-top: 5%; */
+  
+}
+
+@media (max-width: 768px) {
+  .business-info-container {
+     width: 100%;
+     flex-direction: column;
+  }
+}
+
+.buy-access-container{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  
+}
+
+.account-page-container {
+  width: 200px;
+  height: auto; /* Allows dynamic height initially */
+  max-height: 500px; /* Set max height threshold */
+  max-width: 100%; /* Ensures it doesn’t overflow parent container */
+  padding: 20px;
+  background: transparent;
+  border-radius: 15px;
+  border: 2px solid #3c4fe0;
+  backdrop-filter: blur(10px);
+  
+  /* Enable both vertical and horizontal scrolling */
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: nowrap; /* Prevents content from wrapping, enabling horizontal scroll */
+
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #3c4fe0 transparent;
+}
+
+/* Custom scrollbar for Webkit browsers (Chrome, Safari) */
+.account-page-container::-webkit-scrollbar {
+  width: 8px; /* Vertical scrollbar width */
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+.account-page-container::-webkit-scrollbar-thumb {
+  background-color: #3c4fe0; /* Blue scrollbar */
+  border-radius: 10px;
+}
+
+.account-page-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+.account-header {
+  color: #000000;
+  border-bottom: 2px solid #3c4fe0;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.account-details p{
+  color: #000000;
+  margin: 5px 0;
+  
+}
+
+.account-details {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  
+}
+
+#add-source{
+  background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #008521 100%);
+}
+
+#delete-source{
+  background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #e20000 100%);
+}
+
+.account-attribute {
+  display: flex;
+  justify-content: space-between;
+}
+
+.account-attribute-name{
+  color: rgb(0, 0, 0);
+  font-size: 2.0em;
+}
+
+.account-attribute-value{
+  color: #000000;
+  font-size: 2.0em;
+  /* padding-left: 20%; */
+}
+
 /* TOP CENTER CONTROLS */
 .top-center-controls{
   display: flex;
@@ -216,6 +322,8 @@ a {
   font-size: 18px;
 }
 
+
+
 .btn:focus {
   box-shadow: #3c4fe0 0 0 0 1.5px inset, rgba(45, 35, 66, .4) 0 2px 4px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #3c4fe0 0 -3px 0 inset;
 }
@@ -236,9 +344,19 @@ a {
 }
 
 /* THE MAP */
+
+/* MAP FOR CITIZENS AND BUSINESS MONITORING */
 #map{
+  overflow: clip;
   height: 100%;
   width: 100vw; 
+}
+
+/* MAP FOR SHOWING BOUGHT AND AVAILABLE DATA SOURCES */
+#map_buy_access{
+  /* overflow: clip; */
+    height: 100%;
+    width: 70%; 
 }
 
 /* TOP LEFT CONTROLS */

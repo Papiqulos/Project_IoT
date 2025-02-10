@@ -1,0 +1,90 @@
+
+
+<div id="user-id" data-value="{{userId}}"></div>
+<div id="user-role" data-value="{{user.role}}"></div>
+<div id="businessSources" data-value="{{json businessSources}}"></div>
+<div id="availableSources" data-value="{{json availableSources}}"></div>
+    {{> top_center_controls}}
+<div class="buy-access-container">
+    
+    <div class="business-info-container">
+
+        
+        <div class="account-page-container">
+        {{#with business}}
+            <h1 class="account-header">Account Page</h1>
+            <h2 class="account-header">Username: {{../userId}}</h2>
+            <div class="account-details">
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Name:</div>
+                    <div class="account-attribute-value">{{name}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Type:</div>
+                    <div class="account-attribute-value">{{type}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Phone:</div>
+                    <div class="account-attribute-value">{{../user.phone_number}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Address:</div>
+                    <div class="account-attribute-value">{{address}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">City:</div>
+                    <div class="account-attribute-value">{{city}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Zip code:</div>
+                    <div class="account-attribute-value">{{ZIP}}</div>
+                </div>
+            </div>
+        {{/with}}
+        </div>
+
+        <div class="account-page-container">
+            <h1 class="account-header">Your Data Sources</h1>
+        {{#each businessSources}}
+            <h1 class="account-header"></h1>
+            <h2 class="account-header">Source ID: {{source_id}}</h2>
+            <div class="account-details">
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Type:</div>
+                    <div class="account-attribute-value">{{type}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Location:</div>
+                    <div class="account-attribute-value">{{location}}</div>
+                </div>
+                <button class="btn" id="delete-source" onclick="window.location.href='/buy_access/delete/{{source_id}}'">Delete Source</button>
+                
+            </div>
+        {{/each}}
+        </div>
+        
+        <div class="account-page-container">
+            <h1 class="account-header">Available Data Sources</h1>
+        {{#each availableSources}}
+            <h1 class="account-header"></h1>
+            <h2 class="account-header">Source ID: {{source_id}}</h2>
+            <div class="account-details">
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Type:</div>
+                    <div class="account-attribute-value">{{type}}</div>
+                </div>
+                <div class="account-attribute">
+                    <div class="account-attribute-name">Location:</div>
+                    <div class="account-attribute-value">{{location}}</div>
+                </div>
+                <button class="btn" id="add-source" onclick="window.location.href='/buy_access/add/{{source_id}}'">Add Source</button>
+            </div>
+        {{/each}}
+        </div>
+        
+        
+    </div>
+
+    {{> map_buy_access}}
+</div>
+

@@ -600,6 +600,7 @@ async function initMap() {
   });
 
   if (userRole === "citizen") {
+    const bounds = new google.maps.LatLngBounds();
     // Origin marker
     console.log("default_center", window.currentLocation);
     const originMarker = new AdvancedMarkerElement({
@@ -642,7 +643,9 @@ async function initMap() {
       destinationInput.value = addr;
     });
     //////////////////////////
-
+    bounds.extend(originMarker.position);
+    bounds.extend(destinationMarker.position);
+    map.fitBounds(bounds);
     /////// MAP CONTROLS
     //// TOP LEFT CONTROLS
     const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
@@ -748,11 +751,49 @@ async function initMap() {
       console.log(place.geometry.location);
     });
 
-    monitoringButton.addEventListener("click", async () => {
-      console.log("analyticsButton clicked")
+    const urlParams = new URLSearchParams(window.location.search);
+    const event = urlParams.get("event");
+
+    // If you're coming from the /buy_access page
+    if (event === "MonitoringButtonClicked" || !event) {
+      console.log("Monitoring Button Clicked")
 
       // Show the map
       mapContainer.style.display = "block";
+
+      // Show the top right controls
+      topRightControls.style.display = "block";
+
+      // Hide the Grafana Dashboard
+      grafanaContainer.style.display = "none";
+
+      // Hide the search bar
+      analyticsSearchBar.style.display = "none";
+    }
+    else if( event === "AnalyticsButtonClicked") {
+      console.log("Analytics Button Clicked")
+      // Hide the map
+      mapContainer.style.display = "none";
+
+      // Hide the top right controls
+      topRightControls.style.display = "none";
+
+      // Show the Grafana Dashboard
+      grafanaContainer.style.display = "block";
+
+      // Show the search bar
+      analyticsSearchBar.style.display = "block";
+    }
+    
+    // If you're already in the /home page
+    monitoringButton.addEventListener("click", async () => {
+      console.log("Monitoring Button Clicked")
+
+      // Show the map
+      mapContainer.style.display = "block";
+
+      // Show the top right controls
+      topRightControls.style.display = "block";
 
       // Hide the Grafana Dashboard
       grafanaContainer.style.display = "none";
@@ -760,8 +801,9 @@ async function initMap() {
       // Hide the search bar
       analyticsSearchBar.style.display = "none";
     });
+
     analyticsButton.addEventListener("click", async () => {
-      console.log("monitoringButton clicked")
+      console.log("Analytics Button Clicked")
       // Hide the map
       mapContainer.style.display = "none";
 
@@ -771,6 +813,8 @@ async function initMap() {
       // Show the search bar
       analyticsSearchBar.style.display = "block";
     });
+
+    
 
     console.log("Business role detected");
   } else if (userRole === "admin") {
@@ -910,8 +954,11 @@ async function initMap() {
   }
 }
 
+
+
 //Proper loading of Google Maps API
 document.addEventListener("GoogleMapsLoaded", async function () {
   console.log("🚀 Google Maps API is ready. Initializing map...");
+
   await initMap();
 });

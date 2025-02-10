@@ -54,6 +54,9 @@ app.engine('hbs', exphbs.engine({
     },
     and: function (a, b) {
         return a && b;
+  },
+  json: function (context) {
+    return JSON.stringify(context);
   }
 
 

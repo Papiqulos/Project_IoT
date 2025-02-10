@@ -87,6 +87,44 @@ export async function faq(req, res, next) {
     }
 }
 
+export async function buyAccess(req, res, next) {
+    try {
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        const business = await model.getBusinessByUsername(req.session.loggedUserId);
+        const availableSources = await model.getAvailableSourcesFromBusinessId(business.business_id);
+        const businessSources = await model.getBusinessSourcesFromBusinessId(business.business_id);
+        res.render('buy_access', { session: req.session, user: user, business: business , availableSources: availableSources, businessSources: businessSources });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+export async function deleteSource(req, res, next) {
+    try {
+        const source_id = req.params.source_id;
+        const business = await model.getBusinessByUsername(req.session.loggedUserId);
+        await model.deleteSourceFromBusiness(business.business_id, source_id);
+        res.redirect('/buy_access');
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+export async function addSource(req, res, next) {
+    try {
+        const source_id = req.params.source_id;
+        const business = await model.getBusinessByUsername(req.session.loggedUserId);
+        await model.addSourceToBusiness(business.business_id, source_id);
+        res.redirect('/buy_access');
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+//Check if admin (FIXME: This function is not used in the routes)
 export async function checkAdmin(req, res, next) {  
     try {
         const role = await model.getRoleFromUsername(req.session.loggedUserId);
@@ -109,6 +147,7 @@ export async function checkAdmin(req, res, next) {
     }
 }
 
+//Secure fetching of the API key (FIXME: This function is not used in the routes)
 export async function getAPIKey(req, res, next) {
     try {
         const googleMapsApiKey = process.env.GOOGLE_API_KEY;
