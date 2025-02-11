@@ -13,7 +13,9 @@ let map,
   selectedArrivalDate,
   selectedMetric,
   selectedStart = "2025-02-10T15:36:00.000Z",
-  selectedStop = "2025-02-10T16:42:00.000Z";
+  selectedStop = "2025-02-10T16:42:00.000Z",
+  markersAP = [],
+  markersAQ = [];
 let currentTotalAirQualityTrip = [];
 let markers = [];
 const center_bald = { lat: 38.23666252117088, lng: 21.732572423403976 }; // euagellobill
@@ -122,6 +124,7 @@ async function getCoordsFromPlaceName(placeName) {
 function getHeatmapData() {
   
   const accesPoints = influxData.accessPoints;
+  const dataCo2 = influxData.airQuality.co2;
   let heatmapData = [];
   accesPoints.forEach((point) => {
     const lat = parseFloat(point.location.split(",")[0]);
@@ -131,11 +134,12 @@ function getHeatmapData() {
     heatmapData.push(heatmapPoint);
     
   });
+
   // console.log(heatmapData.length);
   return heatmapData;
 }
 
-// Show the heatmap from the access points on the map (CIZIZEN ROLE)
+// Show the heatmap from the access points on the map
 function toggleHeatmap() {
   if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
     // Default values
@@ -162,11 +166,6 @@ function toggleHeatmap() {
   
   window.location.href = `/home?event=HeatmapsButtonClicked|${selectedStart}|${selectedStop}`;
   
-}
-
-// Show the heatmap from the access points that the business has acces to on the map (BUSINESS ROLE)
-function toggleHeatmapB() {
-  console.log("toggleHeatmapB");
 }
 
 function changeRadius(zoom) {
@@ -196,6 +195,22 @@ function clearMarkers() {
     window.markers.forEach((marker) => marker.setMap(null));
   }
   window.markers = [];
+}
+
+function clearMarkersAP() {
+  // Clear existing markers if any
+  if (markersAP) {
+    markersAP.forEach((marker) => marker.setMap(null));
+  }
+  markersAP = [];
+}
+
+function clearMarkersAQ() {
+  // Clear existing markers if any
+  if (markersAQ) {
+    markersAQ.forEach((marker) => marker.setMap(null));
+  }
+  markersAQ = [];
 }
 
 // AIR QUALITY HEATMAPS
@@ -344,10 +359,6 @@ function toggleAirQualityAll() {
   window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
 }
 
-// Show the air quality information based on the selected time range and metric for the business
-function toggleAirQualityAllB() {
-  console.log("toggleAirQualityB");
-}
 
 // Show the air quality information based on his selected route
 async function toggleAirQualityTrip() {
@@ -410,10 +421,6 @@ async function toggleAirQualityTrip() {
   }
 }
 
-// Show the air quality information based on the business
-async function toggleAirQualityTripB() {
-  console.log("toggleAirQualityTripB");
-}
 
 // VARIOUS SEARCHES
 // NOT USED
@@ -706,22 +713,54 @@ async function initMap() {
     document
       .getElementById("infoButton")
       .addEventListener("click", toggleAirQualityTrip);
+      
     //// Initialize the heatmaps (AP and AQ)
     // Create a heatmap for the access points
+    const heatMapDataAP = getHeatmapData();
     heatmapAP = new google.maps.visualization.HeatmapLayer({
-      data: getHeatmapData(), 
+      data: heatMapDataAP, 
       map: map,
 
     });
+    heatMapDataAP.forEach((element) => {
+      const marker = new AdvancedMarkerElement({
+        position: element.location,
+        map: map,
+        title: "Access Point",
+        content: new PinElement({
+          glyph: "📶",
+          scale: 1.5,
+        }).element,
+        gmpDraggable: false,
+      });
+      markersAP.push(marker);
+    });
+
+    const heatMapDataAQ = getAirQualityDataAll(metric);
     // Create a heatmap for the air quality sensors
     heatmapAQ = new google.maps.visualization.HeatmapLayer({
-      data: getAirQualityDataAll(metric),
+      data: heatMapDataAQ,
       map: map,
+    });
+    heatMapDataAQ.forEach((element) => {
+      const marker = new AdvancedMarkerElement({
+        position: element.location,
+        map: map,
+        title: "Air Quality Sensor",
+        content: new PinElement({
+          glyph: "🔍",
+          scale: 1.5,
+        }).element,
+        gmpDraggable: false,
+      });
+      markersAQ.push(marker);
     });
 
     // If the URL does not contain an event parameter, hide both heatmaps
     if (!event) {
       console.log("url does not contain event");
+      clearMarkersAQ();
+      clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(null);
     }
@@ -729,27 +768,19 @@ async function initMap() {
     // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
     if (event === "HeatmapsButtonClicked") {
       console.log("toggling AP and hiding AQ");
-      console.log("BEFORE status of AP", heatmapAP.getMap());
-      console.log("BEFORE status of AQ", heatmapAQ.getMap());
-
+      clearMarkersAQ();
       heatmapAQ.setMap(null);
       heatmapAP.setMap(map);
-
-      console.log("AFTER status of AP", heatmapAP.getMap());
-      console.log("AFTER status of AQ", heatmapAQ.getMap());
     }
 
     // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
     if (event === "AirQualityButtonClicked") {
       console.log("toggling AQ and hiding AP");
-      console.log("BEFORE status of AP", heatmapAP.getMap());
-      console.log("BEFORE status of AQ", heatmapAQ.getMap());
-
+      clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(map);
 
-      console.log("AFTER status of AP", heatmapAP.getMap());
-      console.log("AFTER status of AQ", heatmapAQ.getMap());
+      
     }
 
     // Listeners for the start and stop date and time
