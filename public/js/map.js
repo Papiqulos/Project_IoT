@@ -29,6 +29,7 @@ const userRole = userRoleElemenent.getAttribute("data-value");
 console.log("user role: ", userRole); // Outputs the Handlebars variable
 const influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
 
+// HELPER FUNCTIONS - NOT USED RN
 function componentToHex(c) {
   c = Math.round(c * 255);
   var hex = c.toString(16);
@@ -116,8 +117,8 @@ async function getCoordsFromPlaceName(placeName) {
   });
 }
 
-// HEATMAPS
-// Get the points for the heatmap
+// ACCESS POINTS HEATMAPS
+// Get the points for the heatmap from the InfluxDB access points
 function getHeatmapData() {
   
   const accesPoints = influxData.accessPoints;
@@ -134,6 +135,7 @@ function getHeatmapData() {
   return heatmapData;
 }
 
+// Show the heatmap from the access points on the map
 function toggleHeatmap() {
   if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
     // Default values
@@ -162,39 +164,11 @@ function toggleHeatmap() {
   
 }
 
+// NOT USED
 function clearHeatmap() {
   if (heatmapAP) {
     heatmapAP.setMap(null);
   }
-}
-
-function changeGradient() {
-  const gradient = [
-    "rgba(0, 255, 255, 0)",
-    "rgba(0, 255, 255, 1)",
-    "rgba(0, 191, 255, 1)",
-    "rgba(0, 127, 255, 1)",
-    "rgba(0, 63, 255, 1)",
-    "rgba(0, 0, 255, 1)",
-    "rgba(0, 0, 223, 1)",
-    "rgba(0, 0, 191, 1)",
-    "rgba(0, 0, 159, 1)",
-    "rgba(0, 0, 127, 1)",
-    "rgba(63, 0, 91, 1)",
-    "rgba(127, 0, 63, 1)",
-    "rgba(191, 0, 31, 1)",
-    "rgba(255, 0, 0, 1)",
-  ];
-
-  heatmapAP.set("gradient", heatmapAP.get("gradient") ? null : gradient);
-}
-
-function changeRadius() {
-  heatmapAP.set("radius", heatmapAP.get("radius") ? null : 20);
-}
-
-function changeOpacity() {
-  heatmapAP.set("opacity", heatmapAP.get("opacity") ? null : 0.2);
 }
 
 // Get the api key from the backend
@@ -214,8 +188,216 @@ function clearMarkers() {
   window.markers = [];
 }
 
+// AIR QUALITY HEATMAPS
+// Function to get Air Quality Data for a specific location through the Google Maps API or the InfuxDB sensors (ONLY GOOGLE MAPS API IS IMPLEMENTED)
+async function getAirQualityDataLocation(location_, type = "google") {
+  try {
+    if (type === "google") {
+      let googleApiKeyResolved = await googleApiKey;
+      // console.log("googleApiKeyResolved", googleApiKeyResolved);
+      // console.log("location_", location_);
+      // console.log("location_.lat", location_.lat);
+      // console.log("location_.lng", location_.lng);
+      
+        const response = await axios.post(
+          `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${googleApiKeyResolved}`,
+          {
+            location: {
+              latitude: location_.lat,
+              longitude: location_.lng,
+            },
+            //   extraComputations: ['HEALTH_RECOMMENDATIONS'], // Optional: Add extra computations
+            languageCode: "en", // Optional: Set the language
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Return the API response data
+        return response.data;
+      }else if (type === "influx") {
+        console.log("InfluxDB");
+      }
+  }
+  
+   catch (error) {
+    // Throw an error if the request fails
+    throw new Error(
+      "Error getting air quality data: " +
+        JSON.stringify(error.response?.data || error.message)
+    );
+  }
+}
+
+// Function to get Air Quality Data from the InfuxDB sensors within a specific time frame and a given metric
+function getAirQualityDataAll(metric = "co2") {
+  const airQualityDataI = influxData.airQuality;
+  const dataCo2 = airQualityDataI.co2;
+  const dataHumidity = airQualityDataI.humidity;
+  const dataTemperature = airQualityDataI.temperature;
+
+  // Get the type of air quality data to display
+  let data = [];
+  console.log("using metric for data", metric);
+  // Get the air quality data for the selected metric
+  switch (metric) {
+    case "co2":
+      console.log("co2");
+      dataCo2.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+    case "humidity":
+      console.log("humidity");
+      dataHumidity.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+    case "temperature":
+      console.log("temperature");
+      dataTemperature.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+      default:
+        console.log("default");
+        dataCo2.forEach((element) => {
+          const lat = parseFloat(element.location.split(",")[0]);
+          const lng = parseFloat(element.location.split(",")[1]);
+          const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+          data.push(point);
+        });
+        
+  }
+  console.log(data.length);
+  return data;
+
+}
+
+// Show the air quality information based on the selected time range and metric
+function toggleAirQualityAll() {
+  const aqMetricRadios = document.getElementsByName("aq_metric");
+  // Get the selected metric from the radio buttons
+  for (const radio of aqMetricRadios) {
+      if (radio.checked) {
+        selectedMetric = radio.value;
+        break;
+      }
+    }
+  // If nothing is selected, default to CO2
+  if(!selectedMetric){
+    selectedMetric = "co2";
+    }
+  console.log("selected this metric", selectedMetric);
+  
+  // If no time range is selected, default to a specific time range
+  if (selectedDepartureDate === undefined 
+    || selectedDepartureTime === undefined 
+    || selectedArrivalDate === undefined 
+    || selectedArrivalTime === undefined 
+    ) {
+    // Default values for the selected time range
+    selectedStart = "2025-02-10T15:36:00.000Z";
+    selectedStop = "2025-02-10T16:42:00.000Z";
+  }
+  else{
+    // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
+    // selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
+
+    var startTime = document.getElementById("departureTime").value;
+    var startDate = document.getElementById("departureDate").value;
+    var stopTime = document.getElementById("arrivalTime").value;
+    var stopDate = document.getElementById("arrivalDate").value;
+    
+
+    selectedStart = `${startDate}T${startTime}:00.000Z`;
+    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
+    // Compare the selected dates to make sure the start date is before the stop date
+    if (new Date(selectedStart) > new Date(selectedStop)) {
+      alert("Please select a valid time range");
+      return;
+    }
+  }
+  
+  window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
+}
+
+// Show the air quality information based on his selected route
+async function toggleAirQualityTrip() {
+  try {
+    if (userRole === "citizen") {
+      //Append the container to the map if it doesn't exist
+      if (!document.querySelector(".air-quality-container")) {
+        if (!currentDirections) {
+          console.log("No directions found (KEEP YOURSELF SAFE)");
+          return;
+        }
+        console.log("appending airQualityContainer");
+
+        const airQualityContainer = document.createElement("div");
+        airQualityContainer.classList.add("air-quality-container");
+
+        // Get the average air quality and its category for the selected route
+        let totalAqi = 0;
+        let totalAqiCategory = [];
+
+        currentTotalAirQualityTrip.forEach((element, index) => {
+          totalAqi += element.aqi;
+          totalAqiCategory.push(element.aqiCategory);
+        });
+
+        const averageAqi = totalAqi / currentTotalAirQualityTrip.length;
+        const categoryCount = totalAqiCategory.reduce((acc, category) => {
+          acc[category] = (acc[category] || 0) + 1;
+          return acc;
+        }, {});
+
+        const mostOccurringCategory = Object.keys(categoryCount).reduce(
+          (a, b) => (categoryCount[a] > categoryCount[b] ? a : b)
+        );
+
+        airQualityContainer.innerHTML = `
+        <div class="dropdown-content">
+          <a>Average AQI: ${averageAqi.toFixed(2)}</a>
+          <a>Average Air Quality: ${mostOccurringCategory}</a>
+        </div>
+        `;
+
+        var generalButtonContainer = document.getElementById(
+          "generalButtonContainer"
+        );
+        generalButtonContainer.appendChild(airQualityContainer);
+      } else {
+        console.log("removing airQualityContainer");
+        document.querySelector(".air-quality-container").remove();
+      }
+    } else if (userRole === "business") {
+      console.log("Business role detected");
+    } else if (userRole === "admin") {
+      console.log("Admin role detected");
+    } else {
+      console.log("No role detected KeepYourselfSafe");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // VARIOUS SEARCHES
-// Finds nearby places based on a given center
+// NOT USED
+// Finds nearby places based on a given center 
 async function nearbySearchPlace(center = default_center, results = 5) {
   const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary(
     "places"
@@ -244,7 +426,8 @@ async function nearbySearchPlace(center = default_center, results = 5) {
   }
 }
 
-// Perform a text-based search for places
+// NOT USED
+// Perform a text-based search for places 
 async function textSearchPlace(text, results = 15) {
   console.log("text running");
   if (!text) {
@@ -334,7 +517,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
             const middlePoint = path[Math.floor(path.length / 2)];
 
             // Get the air quality data for the middle point of each step
-            const fetchedData = await getAirQualityDataL({
+            const fetchedData = await getAirQualityDataLocation({
               lat: middlePoint.lat(),
               lng: middlePoint.lng(),
             });
@@ -427,214 +610,6 @@ function clearDirections() {
   }
 }
 
-// AIR QUALITY DATA
-// Function to get Air Quality Data for a specific location through the Google Maps API or the InfuxDB sensors
-async function getAirQualityDataL(location_, type = "google") {
-  try {
-    if (type === "google") {
-      let googleApiKeyResolved = await googleApiKey;
-      // console.log("googleApiKeyResolved", googleApiKeyResolved);
-      // console.log("location_", location_);
-      // console.log("location_.lat", location_.lat);
-      // console.log("location_.lng", location_.lng);
-      
-        const response = await axios.post(
-          `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${googleApiKeyResolved}`,
-          {
-            location: {
-              latitude: location_.lat,
-              longitude: location_.lng,
-            },
-            //   extraComputations: ['HEALTH_RECOMMENDATIONS'], // Optional: Add extra computations
-            languageCode: "en", // Optional: Set the language
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        // Return the API response data
-        return response.data;
-      }else if (type === "influx") {
-        console.log("InfluxDB");
-      }
-  }
-  
-   catch (error) {
-    // Throw an error if the request fails
-    throw new Error(
-      "Error getting air quality data: " +
-        JSON.stringify(error.response?.data || error.message)
-    );
-  }
-}
-
-// Function to get Air Quality Data from the InfuxDB sensors within a specific time frame
-function getAirQualityDataI(metric = "co2") {
-  const airQualityDataI = influxData.airQuality;
-  const dataCo2 = airQualityDataI.co2;
-  const dataHumidity = airQualityDataI.humidity;
-  const dataTemperature = airQualityDataI.temperature;
-
-  // Get the type of air quality data to display
-  let data = [];
-  console.log("using metric for data", metric);
-  // Get the air quality data for the selected metric
-  switch (metric) {
-    case "co2":
-      console.log("co2");
-      dataCo2.forEach((element) => {
-        const lat = parseFloat(element.location.split(",")[0]);
-        const lng = parseFloat(element.location.split(",")[1]);
-        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
-        data.push(point);
-      });
-      break;
-    case "humidity":
-      console.log("humidity");
-      dataHumidity.forEach((element) => {
-        const lat = parseFloat(element.location.split(",")[0]);
-        const lng = parseFloat(element.location.split(",")[1]);
-        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
-        data.push(point);
-      });
-      break;
-    case "temperature":
-      console.log("temperature");
-      dataTemperature.forEach((element) => {
-        const lat = parseFloat(element.location.split(",")[0]);
-        const lng = parseFloat(element.location.split(",")[1]);
-        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
-        data.push(point);
-      });
-      break;
-      default:
-        console.log("default");
-        dataCo2.forEach((element) => {
-          const lat = parseFloat(element.location.split(",")[0]);
-          const lng = parseFloat(element.location.split(",")[1]);
-          const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
-          data.push(point);
-        });
-        
-  }
-  console.log(data.length);
-  return data;
-
-}
-
-
-function toggleAirQuality() {
-  const aqMetricRadios = document.getElementsByName("aq_metric");
-  // Get the selected metric from the radio buttons
-  for (const radio of aqMetricRadios) {
-      if (radio.checked) {
-        selectedMetric = radio.value;
-        break;
-      }
-    }
-  // If nothing is selected, default to CO2
-  if(!selectedMetric){
-    selectedMetric = "co2";
-    }
-  console.log("selected this metric", selectedMetric);
-  
-  // If no time range is selected, default to a specific time range
-  if (selectedDepartureDate === undefined 
-    || selectedDepartureTime === undefined 
-    || selectedArrivalDate === undefined 
-    || selectedArrivalTime === undefined 
-    ) {
-    // Default values for the selected time range
-    selectedStart = "2025-02-10T15:36:00.000Z";
-    selectedStop = "2025-02-10T16:42:00.000Z";
-  }
-  else{
-    // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
-    // selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
-
-    var startTime = document.getElementById("departureTime").value;
-    var startDate = document.getElementById("departureDate").value;
-    var stopTime = document.getElementById("arrivalTime").value;
-    var stopDate = document.getElementById("arrivalDate").value;
-    
-
-    selectedStart = `${startDate}T${startTime}:00.000Z`;
-    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
-    // Compare the selected dates to make sure the start date is before the stop date
-    if (new Date(selectedStart) > new Date(selectedStop)) {
-      alert("Please select a valid time range");
-      return;
-    }
-  }
-  
-  window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
-}
-
-// NEEDS CHANGES
-// Show the air quality information based on the user's location and his selected route
-async function toggleAirQualityTrip() {
-  try {
-    if (userRole === "citizen") {
-      //Append the container to the map if it doesn't exist
-      if (!document.querySelector(".air-quality-container")) {
-        if (!currentDirections) {
-          console.log("No directions found (KEEP YOURSELF SAFE)");
-          return;
-        }
-        console.log("appending airQualityContainer");
-
-        const airQualityContainer = document.createElement("div");
-        airQualityContainer.classList.add("air-quality-container");
-
-        // Get the average air quality and its category for the selected route
-        let totalAqi = 0;
-        let totalAqiCategory = [];
-
-        currentTotalAirQualityTrip.forEach((element, index) => {
-          totalAqi += element.aqi;
-          totalAqiCategory.push(element.aqiCategory);
-        });
-
-        const averageAqi = totalAqi / currentTotalAirQualityTrip.length;
-        const categoryCount = totalAqiCategory.reduce((acc, category) => {
-          acc[category] = (acc[category] || 0) + 1;
-          return acc;
-        }, {});
-
-        const mostOccurringCategory = Object.keys(categoryCount).reduce(
-          (a, b) => (categoryCount[a] > categoryCount[b] ? a : b)
-        );
-
-        airQualityContainer.innerHTML = `
-        <div class="dropdown-content">
-          <a>Average AQI: ${averageAqi.toFixed(2)}</a>
-          <a>Average Air Quality: ${mostOccurringCategory}</a>
-        </div>
-        `;
-
-        var generalButtonContainer = document.getElementById(
-          "generalButtonContainer"
-        );
-        generalButtonContainer.appendChild(airQualityContainer);
-      } else {
-        console.log("removing airQualityContainer");
-        document.querySelector(".air-quality-container").remove();
-      }
-    } else if (userRole === "business") {
-      console.log("Business role detected");
-    } else if (userRole === "admin") {
-      console.log("Admin role detected");
-    } else {
-      console.log("No role detected KeepYourselfSafe");
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 // INITIALIZE THE MAP AND ITS CONTROLS
 async function initMap() {
   //// Initialize the map
@@ -705,24 +680,13 @@ async function initMap() {
   // Toggles the air quality information on the map
   document
     .getElementById("air_quality_button")
-    .addEventListener("click", toggleAirQuality);
+    .addEventListener("click", toggleAirQualityAll);
 
   // Listener for the "✉️" button
   // Relative information about the user's nearby places and their air quality
   document
     .getElementById("infoButton")
     .addEventListener("click", toggleAirQualityTrip);
-
-  // Misc listeners for various heatmap options
-  document
-    .getElementById("change-gradient")
-    .addEventListener("click", changeGradient);
-  document
-    .getElementById("change-opacity")
-    .addEventListener("click", changeOpacity);
-  document
-    .getElementById("change-radius")
-    .addEventListener("click", changeRadius);
 
   // Listeners for map actions
   map.addListener("dragend", () => {
@@ -731,9 +695,9 @@ async function initMap() {
 
   if (userRole === "citizen") {
     const bounds = new google.maps.LatLngBounds();
+
+    //// MARKERS FOR DIRECTIONS
     // Origin marker
-    // console.log("default_center", window.currentLocation);
-    
     const originMarker = new AdvancedMarkerElement({
       position: window.currentLocation,
       map: map,
@@ -783,9 +747,6 @@ async function initMap() {
       destinationInput.value = addr;
     });
     
-    // bounds.extend(originMarker.position);
-    // bounds.extend(destinationMarker.position);
-    // map.fitBounds(bounds);
     //// Initialize the heatmaps (AP and AQ)
     // Create a heatmap for the access points
     heatmapAP = new google.maps.visualization.HeatmapLayer({
@@ -795,7 +756,7 @@ async function initMap() {
     });
     // Create a heatmap for the air quality sensors
     heatmapAQ = new google.maps.visualization.HeatmapLayer({
-      data: getAirQualityDataI(metric),
+      data: getAirQualityDataAll(metric),
       map: map,
     });
 
@@ -832,8 +793,8 @@ async function initMap() {
       console.log("AFTER status of AQ", heatmapAQ.getMap());
     }
     
-    /////// MAP CONTROLS
-    //// TOP LEFT CONTROLS
+    //// MAP CONTROLS
+    // TOP LEFT CONTROLS
     const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container    
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
 
@@ -845,7 +806,7 @@ async function initMap() {
       strictBounds: false,
     };
 
-    // ORIGIN SEARCH BAR //
+    // ORIGIN SEARCH BAR 
     var originInput = document.getElementById("origin_input");
     const autocompleteOrigin = new google.maps.places.Autocomplete(
       originInput,
@@ -859,7 +820,7 @@ async function initMap() {
       // console.log("place changed");
     });
 
-    // DESTINATION SEARCH BAR //
+    // DESTINATION SEARCH BAR 
     var destinationInput = document.getElementById("destination_input");
     const autocompleteDestination = new google.maps.places.Autocomplete(
       destinationInput,
@@ -879,8 +840,7 @@ async function initMap() {
       .getElementById("get_directions")
       .addEventListener("click", showDirections);
 
-    // var timeInput = document.getElementById("timeInput");
-    // map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(timeInput);
+    // Listeners for the start and stop date and time
     var departureTimeElement = document.getElementById("departureTime");
     var arrivalTimeElement = document.getElementById("arrivalTime");
     var departureDateElement = document.getElementById("departureDate");
@@ -900,8 +860,6 @@ async function initMap() {
       selectedDepartureDate = departureDateElement.value;
       console.log("selectedDepartureDate", selectedDepartureDate);
     });
-
-    
 
     // Listener for the arrival time
     arrivalTimeElement
@@ -928,7 +886,6 @@ async function initMap() {
     var analyticsButton = document.getElementById("analyticsButton");
     var mapContainer = document.getElementById("map");
     var grafanaContainer = document.getElementById("grafanaContainer");
-    // var analyticsSearchBar = document.getElementById("analyticsSearchBar");
     var areaInput = document.getElementById("areaInput");
 
     const options = {
@@ -937,19 +894,6 @@ async function initMap() {
       fields: ["address_components", "geometry", "icon", "name"],
       strictBounds: false,
     };
-
-    // BUSINESS SEARCH BAR //
-    // const analyticsAutoComplete = new google.maps.places.Autocomplete(
-    //   areaInput,
-    //   options
-    // );
-    // analyticsAutoComplete.addListener("place_changed", () => {
-    //   const place = analyticsAutoComplete.getPlace();
-    //   console.log(place.geometry.location);
-    // });
-
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const event = urlParams.get("event");
 
     // If you're coming from the /buy_access page
     if (event === "MonitoringButtonClicked" || !event) {
@@ -1006,7 +950,8 @@ async function initMap() {
     
 
     console.log("Business role detected");
-  } else if (userRole === "admin") {
+  } // NOT TESTED 
+  else if (userRole === "admin") {
     // Origin marker
     console.log("default_center", window.currentLocation);
     const originMarker = new AdvancedMarkerElement({
