@@ -169,6 +169,11 @@ function toggleHeatmapB() {
   console.log("toggleHeatmapB");
 }
 
+function changeRadius(zoom) {
+  heatmapAP.set("radius", zoom * 3);
+  heatmapAQ.set("radius", zoom * 3);
+}
+
 // NOT USED
 function clearHeatmap() {
   if (heatmapAP) {
@@ -779,6 +784,11 @@ async function initMap() {
     .addEventListener("change", () => {
       console.log("arrivalDate changed to", arrivalDateElement.value);
       selectedArrivalDate = arrivalDateElement.value;
+    });
+
+    map.addListener("zoom_changed", () => {
+      console.log("zoom changed", map.getZoom());
+      changeRadius(map.getZoom());
     });
 
   if (userRole === "citizen") {
