@@ -1,6 +1,7 @@
 // Global variables
 let map,
-  heatmap,
+  heatmapAP,
+  heatmapAQ,
   infoWindow,
   selectedOrigin,
   selectedDestination,
@@ -9,10 +10,11 @@ let map,
   selectedDepartureTime,
   selectedArrivalTime,
   selectedDepartureDate,
-  selectedArrivalDate
+  selectedArrivalDate,
+  selectedMetric,
   selectedStart = "2025-02-10T15:36:00.000Z",
   selectedStop = "2025-02-10T16:42:00.000Z";
-let currentTotalAirQuality = [];
+let currentTotalAirQualityTrip = [];
 let markers = [];
 const center_bald = { lat: 38.23666252117088, lng: 21.732572423403976 }; // euagellobill
 const center_HMTY = { lat: 38.28806669351595, lng: 21.78915113469408};
@@ -25,6 +27,7 @@ console.log("username: ", userId); // Outputs the Handlebars variable
 const userRoleElemenent = document.getElementById("user-role");
 const userRole = userRoleElemenent.getAttribute("data-value");
 console.log("user role: ", userRole); // Outputs the Handlebars variable
+const influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
 
 function componentToHex(c) {
   c = Math.round(c * 255);
@@ -115,10 +118,9 @@ async function getCoordsFromPlaceName(placeName) {
 
 // HEATMAPS
 // Get the points for the heatmap
-// Heatmap data: 500 Points
 function getHeatmapData() {
   
-  const accesPoints = JSON.parse(document.getElementById("heatmapData").getAttribute("data-value")).accessPoints;
+  const accesPoints = influxData.accessPoints;
   let heatmapData = [];
   accesPoints.forEach((point) => {
     const lat = parseFloat(point.location.split(",")[0]);
@@ -139,8 +141,16 @@ function toggleHeatmap() {
     selectedStop = "2025-02-10T16:42:00.000Z";
   }
   else{
-    selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
-    selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
+    // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
+    // selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
+
+    var startTime = document.getElementById("departureTime").value;
+    var startDate = document.getElementById("departureDate").value;
+    var stopTime = document.getElementById("arrivalTime").value;
+    var stopDate = document.getElementById("arrivalDate").value;
+
+    selectedStart = `${startDate}T${startTime}:00.000Z`;
+    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
     // Compare the selected dates to make sure the start date is before the stop date
     if (new Date(selectedStart) > new Date(selectedStop)) {
       alert("Please select a valid time range");
@@ -153,8 +163,8 @@ function toggleHeatmap() {
 }
 
 function clearHeatmap() {
-  if (heatmap) {
-    heatmap.setMap(null);
+  if (heatmapAP) {
+    heatmapAP.setMap(null);
   }
 }
 
@@ -176,15 +186,15 @@ function changeGradient() {
     "rgba(255, 0, 0, 1)",
   ];
 
-  heatmap.set("gradient", heatmap.get("gradient") ? null : gradient);
+  heatmapAP.set("gradient", heatmapAP.get("gradient") ? null : gradient);
 }
 
 function changeRadius() {
-  heatmap.set("radius", heatmap.get("radius") ? null : 20);
+  heatmapAP.set("radius", heatmapAP.get("radius") ? null : 20);
 }
 
 function changeOpacity() {
-  heatmap.set("opacity", heatmap.get("opacity") ? null : 0.2);
+  heatmapAP.set("opacity", heatmapAP.get("opacity") ? null : 0.2);
 }
 
 // Get the api key from the backend
@@ -279,7 +289,7 @@ async function textSearchPlace(text, results = 15) {
 
 // DIRECTONS
 // Get directions and intermediate markers from an origin to a destination with a specific travel mode
-async function getDirections(origin, destination, travelMode = "DRIVING", departureTime = new Date(), arrivalTime = getSelectedTimeDateObj(selectedArrivalDate, selectedArrivalTime)) {
+async function getDirections(origin, destination, travelMode = "DRIVING", departureTime = new Date(), arrivalTime = new Date() + 1) {
   // Clear any existing directions
   clearDirections();
   // Clear any existing markers
@@ -318,13 +328,13 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
         const steps = result.routes[0].legs[0].steps;
         if (steps) {
           // Clear the previous air quality data
-          currentTotalAirQuality = [];
+          currentTotalAirQualityTrip = [];
           steps.forEach(async (step, i) => {
             const path = step.path;
             const middlePoint = path[Math.floor(path.length / 2)];
 
             // Get the air quality data for the middle point of each step
-            const fetchedData = await getAirQualityData({
+            const fetchedData = await getAirQualityDataL({
               lat: middlePoint.lat(),
               lng: middlePoint.lng(),
             });
@@ -333,7 +343,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
             const aqi = fetchedData.indexes[0].aqi;
             const aqiColor = fetchedData.indexes[0].color;
             const aqiCategory = fetchedData.indexes[0].category;
-            currentTotalAirQuality.push({ aqi, aqiColor, aqiCategory });
+            currentTotalAirQualityTrip.push({ aqi, aqiColor, aqiCategory });
 
             const backgroundColor = rgbToHex(
               aqiColor.red,
@@ -418,34 +428,41 @@ function clearDirections() {
 }
 
 // AIR QUALITY DATA
-// Function to get Air Quality Data for a specific location
-async function getAirQualityData(location_) {
-  let googleApiKeyResolved = await googleApiKey;
-  // console.log("googleApiKeyResolved", googleApiKeyResolved);
-  // console.log("location_", location_);
-  // console.log("location_.lat", location_.lat);
-  // console.log("location_.lng", location_.lng);
+// Function to get Air Quality Data for a specific location through the Google Maps API or the InfuxDB sensors
+async function getAirQualityDataL(location_, type = "google") {
   try {
-    const response = await axios.post(
-      `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${googleApiKeyResolved}`,
-      {
-        location: {
-          latitude: location_.lat,
-          longitude: location_.lng,
-        },
-        //   extraComputations: ['HEALTH_RECOMMENDATIONS'], // Optional: Add extra computations
-        languageCode: "en", // Optional: Set the language
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    if (type === "google") {
+      let googleApiKeyResolved = await googleApiKey;
+      // console.log("googleApiKeyResolved", googleApiKeyResolved);
+      // console.log("location_", location_);
+      // console.log("location_.lat", location_.lat);
+      // console.log("location_.lng", location_.lng);
+      
+        const response = await axios.post(
+          `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${googleApiKeyResolved}`,
+          {
+            location: {
+              latitude: location_.lat,
+              longitude: location_.lng,
+            },
+            //   extraComputations: ['HEALTH_RECOMMENDATIONS'], // Optional: Add extra computations
+            languageCode: "en", // Optional: Set the language
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-    // Return the API response data
-    return response.data;
-  } catch (error) {
+        // Return the API response data
+        return response.data;
+      }else if (type === "influx") {
+        console.log("InfluxDB");
+      }
+  }
+  
+   catch (error) {
     // Throw an error if the request fails
     throw new Error(
       "Error getting air quality data: " +
@@ -454,9 +471,111 @@ async function getAirQualityData(location_) {
   }
 }
 
+// Function to get Air Quality Data from the InfuxDB sensors within a specific time frame
+function getAirQualityDataI(metric = "co2") {
+  const airQualityDataI = influxData.airQuality;
+  const dataCo2 = airQualityDataI.co2;
+  const dataHumidity = airQualityDataI.humidity;
+  const dataTemperature = airQualityDataI.temperature;
+
+  // Get the type of air quality data to display
+  let data = [];
+  console.log("using metric for data", metric);
+  // Get the air quality data for the selected metric
+  switch (metric) {
+    case "co2":
+      console.log("co2");
+      dataCo2.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+    case "humidity":
+      console.log("humidity");
+      dataHumidity.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+    case "temperature":
+      console.log("temperature");
+      dataTemperature.forEach((element) => {
+        const lat = parseFloat(element.location.split(",")[0]);
+        const lng = parseFloat(element.location.split(",")[1]);
+        const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+        data.push(point);
+      });
+      break;
+      default:
+        console.log("default");
+        dataCo2.forEach((element) => {
+          const lat = parseFloat(element.location.split(",")[0]);
+          const lng = parseFloat(element.location.split(",")[1]);
+          const point = { location: new google.maps.LatLng(lat, lng), weight: element._value };
+          data.push(point);
+        });
+        
+  }
+  console.log(data.length);
+  return data;
+
+}
+
+
+function toggleAirQuality() {
+  const aqMetricRadios = document.getElementsByName("aq_metric");
+  // Get the selected metric from the radio buttons
+  for (const radio of aqMetricRadios) {
+      if (radio.checked) {
+        selectedMetric = radio.value;
+        break;
+      }
+    }
+  // If nothing is selected, default to CO2
+  if(!selectedMetric){
+    selectedMetric = "co2";
+    }
+  console.log("selected this metric", selectedMetric);
+  
+  // If no time range is selected, default to a specific time range
+  if (selectedDepartureDate === undefined 
+    || selectedDepartureTime === undefined 
+    || selectedArrivalDate === undefined 
+    || selectedArrivalTime === undefined 
+    ) {
+    // Default values for the selected time range
+    selectedStart = "2025-02-10T15:36:00.000Z";
+    selectedStop = "2025-02-10T16:42:00.000Z";
+  }
+  else{
+    // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
+    // selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
+
+    var startTime = document.getElementById("departureTime").value;
+    var startDate = document.getElementById("departureDate").value;
+    var stopTime = document.getElementById("arrivalTime").value;
+    var stopDate = document.getElementById("arrivalDate").value;
+    
+
+    selectedStart = `${startDate}T${startTime}:00.000Z`;
+    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
+    // Compare the selected dates to make sure the start date is before the stop date
+    if (new Date(selectedStart) > new Date(selectedStop)) {
+      alert("Please select a valid time range");
+      return;
+    }
+  }
+  
+  window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
+}
+
 // NEEDS CHANGES
 // Show the air quality information based on the user's location and his selected route
-async function toggleAirQuality() {
+async function toggleAirQualityTrip() {
   try {
     if (userRole === "citizen") {
       //Append the container to the map if it doesn't exist
@@ -474,12 +593,12 @@ async function toggleAirQuality() {
         let totalAqi = 0;
         let totalAqiCategory = [];
 
-        currentTotalAirQuality.forEach((element, index) => {
+        currentTotalAirQualityTrip.forEach((element, index) => {
           totalAqi += element.aqi;
           totalAqiCategory.push(element.aqiCategory);
         });
 
-        const averageAqi = totalAqi / currentTotalAirQuality.length;
+        const averageAqi = totalAqi / currentTotalAirQualityTrip.length;
         const categoryCount = totalAqiCategory.reduce((acc, category) => {
           acc[category] = (acc[category] || 0) + 1;
           return acc;
@@ -552,8 +671,6 @@ async function initMap() {
     disableDefaultUI: true,
   });
 
-  
-
   //// TOP RIGHT CONTROLS
   const topRightControls = document.getElementById("top-right-controls"); //get the top right controls container
   map.controls[google.maps.ControlPosition.TOP_RIGHT].push(topRightControls); //push the top right controls container to the top right of the map
@@ -570,30 +687,31 @@ async function initMap() {
     .getElementById("heatmaps_button")
     .addEventListener("click", toggleHeatmap);
 
-    //// Initialize the heatmap
-    // Create a heatmap
-    heatmap = new google.maps.visualization.HeatmapLayer({
-      data: getHeatmapData(), 
-      map: map,
-
-    });
-
     const urlParams = new URLSearchParams(window.location.search);
-    const event = urlParams.get("event");
-
-    //Hide the heatmap by default
-    
-    if (!event) {
-      console.log("oo1111")
-      heatmap.setMap(null);
+    let event, start, stop, metric;
+    // If the URL contains an event parameter, get the parameters
+    if (urlParams.has("event")) {
+      event = urlParams.get("event").split("|")[0];
+      console.log("event", event);
+      start = urlParams.get("event").split("|")[1];
+      stop = urlParams.get("event").split("|")[2];
+      metric = urlParams.get("event").split("|")[3];
     }
-    
+    // For the first time the page is loaded default to CO2
+    else{
+      metric = "co2";
+    }
+
+  // Toggles the air quality information on the map
+  document
+    .getElementById("air_quality_button")
+    .addEventListener("click", toggleAirQuality);
 
   // Listener for the "✉️" button
   // Relative information about the user's nearby places and their air quality
   document
     .getElementById("infoButton")
-    .addEventListener("click", toggleAirQuality);
+    .addEventListener("click", toggleAirQualityTrip);
 
   // Misc listeners for various heatmap options
   document
@@ -615,6 +733,7 @@ async function initMap() {
     const bounds = new google.maps.LatLngBounds();
     // Origin marker
     // console.log("default_center", window.currentLocation);
+    
     const originMarker = new AdvancedMarkerElement({
       position: window.currentLocation,
       map: map,
@@ -639,7 +758,6 @@ async function initMap() {
       originInput.value = addr;
     });
     
-
     // Destination marker
     const destinationMarker = new AdvancedMarkerElement({
       position: center_bald,
@@ -668,10 +786,50 @@ async function initMap() {
     // bounds.extend(originMarker.position);
     // bounds.extend(destinationMarker.position);
     // map.fitBounds(bounds);
+    //// Initialize the heatmaps (AP and AQ)
+    // Create a heatmap for the access points
+    heatmapAP = new google.maps.visualization.HeatmapLayer({
+      data: getHeatmapData(), 
+      map: map,
 
-    if (event) {
-      console.log("oooo")
-      heatmap.setMap(heatmap.getMap());
+    });
+    // Create a heatmap for the air quality sensors
+    heatmapAQ = new google.maps.visualization.HeatmapLayer({
+      data: getAirQualityDataI(metric),
+      map: map,
+    });
+
+    // If the URL does not contain an event parameter, hide both heatmaps
+    if (!event) {
+      console.log("url does not contain event");
+      heatmapAP.setMap(null);
+      heatmapAQ.setMap(null);
+    }
+
+    // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
+    if (event === "HeatmapsButtonClicked") {
+      console.log("toggling AP and hiding AQ");
+      console.log("BEFORE status of AP", heatmapAP.getMap());
+      console.log("BEFORE status of AQ", heatmapAQ.getMap());
+
+      heatmapAQ.setMap(null);
+      heatmapAP.setMap(map);
+
+      console.log("AFTER status of AP", heatmapAP.getMap());
+      console.log("AFTER status of AQ", heatmapAQ.getMap());
+    }
+
+    // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
+    if (event === "AirQualityButtonClicked") {
+      console.log("toggling AQ and hiding AP");
+      console.log("BEFORE status of AP", heatmapAP.getMap());
+      console.log("BEFORE status of AQ", heatmapAQ.getMap());
+
+      heatmapAP.setMap(null);
+      heatmapAQ.setMap(map);
+
+      console.log("AFTER status of AP", heatmapAP.getMap());
+      console.log("AFTER status of AQ", heatmapAQ.getMap());
     }
     
     /////// MAP CONTROLS
@@ -770,7 +928,7 @@ async function initMap() {
     var analyticsButton = document.getElementById("analyticsButton");
     var mapContainer = document.getElementById("map");
     var grafanaContainer = document.getElementById("grafanaContainer");
-    var analyticsSearchBar = document.getElementById("analyticsSearchBar");
+    // var analyticsSearchBar = document.getElementById("analyticsSearchBar");
     var areaInput = document.getElementById("areaInput");
 
     const options = {
@@ -781,14 +939,14 @@ async function initMap() {
     };
 
     // BUSINESS SEARCH BAR //
-    const analyticsAutoComplete = new google.maps.places.Autocomplete(
-      areaInput,
-      options
-    );
-    analyticsAutoComplete.addListener("place_changed", () => {
-      const place = analyticsAutoComplete.getPlace();
-      console.log(place.geometry.location);
-    });
+    // const analyticsAutoComplete = new google.maps.places.Autocomplete(
+    //   areaInput,
+    //   options
+    // );
+    // analyticsAutoComplete.addListener("place_changed", () => {
+    //   const place = analyticsAutoComplete.getPlace();
+    //   console.log(place.geometry.location);
+    // });
 
     // const urlParams = new URLSearchParams(window.location.search);
     // const event = urlParams.get("event");
@@ -806,8 +964,6 @@ async function initMap() {
       // Hide the Grafana Dashboard
       grafanaContainer.style.display = "none";
 
-      // Hide the search bar
-      analyticsSearchBar.style.display = "none";
     }
     else if( event === "AnalyticsButtonClicked") {
       console.log("Analytics Button Clicked")
@@ -820,8 +976,6 @@ async function initMap() {
       // Show the Grafana Dashboard
       grafanaContainer.style.display = "block";
 
-      // Show the search bar
-      analyticsSearchBar.style.display = "block";
     }
     
     // If you're already in the /home page
@@ -837,8 +991,6 @@ async function initMap() {
       // Hide the Grafana Dashboard
       grafanaContainer.style.display = "none";
 
-      // Hide the search bar
-      analyticsSearchBar.style.display = "none";
     });
 
     analyticsButton.addEventListener("click", async () => {
@@ -849,8 +1001,6 @@ async function initMap() {
       // Show the Grafana Dashboard
       grafanaContainer.style.display = "block";
 
-      // Show the search bar
-      analyticsSearchBar.style.display = "block";
     });
 
     

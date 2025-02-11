@@ -15,11 +15,11 @@ export async function home(req, res, next) {
         const event = req.query.event;
         
         if (event){
-            console.log("Event: ", event);
+            // console.log("Event: ", event);
             const start = event.split("|")[1];
             const stop = event.split("|")[2];
-            console.log("Start: ", start);
-            console.log("Stop: ", stop);
+            // console.log("Start: ", start);
+            // console.log("Stop: ", stop);
             influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
             influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
         }
