@@ -1,4 +1,4 @@
-<div id="top-left-controls">
+<div id="top-left-controls" >
 
       
         <div class="search-controls">
@@ -65,34 +65,8 @@
 
           </div>
 
-          <div class="times-container">
-
-
-            <div class="time-container">
-
-              <label for="departureTime">Departure:</label>
-              <input type="date" id="departureDate">
-              <input
-                type="time"
-                id="departureTime"
-                name="departureTime"
-                value="08:00"
-              />
-              
-            </div>
-
+          {{> bottom_right_controls}}
           
-            <div class="time-container">
-              <label for="arrivalTime">Arrival:</label>
-              <input type="date" id="arrivalDate">
-              <input
-                type="time"
-                id="arrivalTime"
-                name="arrivalTime"
-                value="16:00"
-              />
-            </div>
-          </div>
           <button class="btn" id="get_directions" type="submit">Get Directions</button>
 
         </div>

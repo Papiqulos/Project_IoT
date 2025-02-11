@@ -5,25 +5,68 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 
+
 //Show the home page
 export async function home(req, res, next) {
+    const user = await model.getUserByUsername(req.session.loggedUserId);
+    let influxDataAirQualityAll, influxDataAccessPointsAll;
     try {
-        const role = await model.getRoleFromUsername(req.session.loggedUserId);
-        const user = await model.getUserByUsername(req.session.loggedUserId);
-        const googleApiKey = process.env.GOOGLE_API_KEY;
-        const location = "38.2470381045693, 21.733589867001573"; // Default location: Patras, Greece
-
-        let airQualityData = await model.getAirQualityData(googleApiKey, location);
+        console.log("home");
+        const event = req.query.event;
         
+        if (event){
+            console.log("Event: ", event);
+            const start = event.split("|")[1];
+            const stop = event.split("|")[2];
+            console.log("Start: ", start);
+            console.log("Stop: ", stop);
+            influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
+            influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
+        }
+        else {
+            // const influxDataAirQualityELTA = await model.getInfluxDataAirQuality();
+            // console.log("Influx Data Air Quality: ", influxDataAirQualityELTA[600]);
+
+            // const influxDataAccessPointsStroumpio = await model.getInfluxDataAccessPoints();
+            // console.log("Influx Data Access Points: ", influxDataAccessPointsStroumpio[0]);
+
+            // Get the default data for the heatmap
+            influxDataAirQualityAll = await model.getInfluxDataAirQualityAll();
+            // console.log("Influx Data Air Quality All: ", influxDataAirQualityAll);
+
+            influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll();
+            // console.log("Influx Data Access Points All: ", influxDataAccessPointsAll);
+            
+        }
         
 
-
-        res.render('home', { session: req.session, user: user, airQualityData: airQualityData, role: role });
+        res.render('home', { session: req.session, 
+            user: user,  
+            influxData: { airQuality: influxDataAirQualityAll, accessPoints: influxDataAccessPointsAll } });
     
     }
     catch (error) {
         next(error);
 
+    }
+}
+
+//Show the heatmap page
+export async function heatmap(req, res, next) {
+    try {
+        const user = await model.getUserByUsername(req.session.loggedUserId);
+        const start = req.params.start;
+        const stop = req.params.stop;
+        console.log("Start: ", start);
+        console.log("Stop: ", stop);
+        const influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
+        const influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
+        res.render('home', { session: req.session, 
+                            user: user, 
+                            influxData: { airQuality: influxDataAirQualityAll, accessPoints: influxDataAccessPointsAll } });
+    }
+    catch (error) {
+        next(error);
     }
 }
 
@@ -87,6 +130,7 @@ export async function faq(req, res, next) {
     }
 }
 
+// Buy Access page
 export async function buyAccess(req, res, next) {
     try {
         const user = await model.getUserByUsername(req.session.loggedUserId);
@@ -101,6 +145,7 @@ export async function buyAccess(req, res, next) {
     }
 }
 
+// Delete a source from the business
 export async function deleteSource(req, res, next) {
     try {
         const source_id = req.params.source_id;
@@ -113,6 +158,7 @@ export async function deleteSource(req, res, next) {
     }
 }
 
+// Add a source to the business
 export async function addSource(req, res, next) {
     try {
         const source_id = req.params.source_id;

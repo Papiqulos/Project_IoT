@@ -54,7 +54,7 @@ async function initMap() {
   });
 
   const bounds = new google.maps.LatLngBounds();
-  // Show the business sources with green markers
+  // Show the business sources with blue markers
   businessSources.forEach((source) => {
     const lat = parseFloat(source.location.split(",")[0]);
     const lng = parseFloat(source.location.split(",")[1]);

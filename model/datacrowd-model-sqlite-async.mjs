@@ -3,15 +3,31 @@ import { Database } from 'sqlite-async';
 import bcrypt from 'bcrypt';
 import axios from 'axios';
 import dotenv from 'dotenv'
-import e from 'express';
+import e, { query } from 'express';
+import { InfluxDB, Point } from '@influxdata/influxdb-client';
+
 dotenv.config()
+const url = process.env.INFLUXDB_URL;
+const token = process.env.INFLUX_TOKEN1;
+const org = process.env.INFLUXDB_ORG;
+const bucket = "datacrowd";
+
+let queryApi;
+// Connect to the InfluxDB
+try{
+    queryApi = new InfluxDB({url, token}).getQueryApi(org);
+    console.log('Connected to the datacrowd InfluxDB.');
+}
+catch (error) {
+    throw Error('Error connecting to the InfluxDB: ' + error);
+}
+    
 
 let sql;
-
-// Connect to the database
+// Connect to the static database
 try {
     sql = await Database.open('data/datacrowd.db');
-    console.log('Connected to the data-crowd log-in database.');
+    console.log('Connected to the static data-crowd database.');
 } 
 catch (error) {
     throw Error('Error connecting to the database: ' + error);
@@ -231,5 +247,186 @@ export let getCitizenByUsername = async function (username){
     } 
     catch (error) {
         throw Error('Error getting citizen by username: ' + error);
+    }
+}
+
+export let getDataSourceFromLocationN = async function (location_n){
+    try {
+        const source = await sql.get('SELECT * FROM data_source WHERE location_n = ?', location_n);
+        return source;
+    } 
+    catch (error) {
+        throw Error('Error getting source by location_n: ' + error);
+    }
+}
+
+// Get the data from InfluxDB
+// Air Quality for a specific location within a time frame
+export let getInfluxDataAirQuality = async function (location_n = "ELTA", start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+    try {
+        const dataSource = await getDataSourceFromLocationN(location_n);
+        const fluxQuery = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r._measurement == "air_quality_sensor_${location_n}")`;
+        const data = [];
+        // Add extra fields
+        const myQuery = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
+                const o = tableMeta.toObject(values)
+                o['location_n'] = location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                data.push(o);
+            }
+            }
+            await myQuery();
+            return data;
+    } 
+
+    catch (error) {
+        throw Error('Error getting InfluxDB data: ' + error);
+    }
+}
+
+// Access Points for a specific location within a time frame
+export let getInfluxDataAccessPoints = async function (location_n = "Stroumpio", start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+    try {
+        const dataSource = await getDataSourceFromLocationN(location_n);
+        const fluxQuery = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r._measurement == "ap_${location_n}")`;
+        const data = [];
+        // Add extra fields
+        const myQuery = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
+                const o = tableMeta.toObject(values)
+                o['location_n'] = location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                // console.log(
+                // `${o._time} ${o._measurement} in '${o.co2}' (${o.humidity}): ${o._field}=${o._value}`
+                // )
+                data.push(o);
+            }
+            }
+            await myQuery();
+        return data;
+    } 
+
+    catch (error) {
+        throw Error('Error getting InfluxDB data: ' + error);
+    }
+}
+
+// Air Quality for all locations within a time frame
+export let getInfluxDataAirQualityAll = async function (start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+    try {
+        
+        const fluxQueryCo2 = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r["_field"] == "co2" and r._measurement =~ /^air_quality_sensor_.+/)
+                            `;
+
+        const fluxQueryHumidity = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r["_field"] == "humidity" and r._measurement =~ /^air_quality_sensor_.+/)
+                            `;
+
+        const fluxQueryTemperature = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r["_field"] == "temperature" and r._measurement =~ /^air_quality_sensor_.+/)
+                            `;
+
+        const dataCo2 = [];
+        const dataHumidity = [];
+        const dataTemperature = [];
+
+        const myQueryCo2 = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQueryCo2)) {
+                const o = tableMeta.toObject(values)
+                const dataSource = await getDataSourceFromLocationN(o._measurement.split('air_quality_sensor_')[1]);
+                if (dataSource == undefined) {
+                    continue;
+                }
+                o['location_n'] = dataSource.location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                dataCo2.push(o);
+            }
+        }
+        await myQueryCo2();
+
+        const myQueryHumidity = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQueryHumidity)) {
+                const o = tableMeta.toObject(values)
+                const dataSource = await getDataSourceFromLocationN(o._measurement.split('air_quality_sensor_')[1]);
+                if (dataSource == undefined) {
+                    continue;
+                }
+                o['location_n'] = dataSource.location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                dataHumidity.push(o);
+            }
+        }
+        await myQueryHumidity();
+
+        const myQueryTemperature = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQueryTemperature)) {
+                const o = tableMeta.toObject(values)
+                const dataSource = await getDataSourceFromLocationN(o._measurement.split('air_quality_sensor_')[1]);
+                if (dataSource == undefined) {
+                    continue;
+                }
+                o['location_n'] = dataSource.location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                dataTemperature.push(o);
+            }
+        }
+        await myQueryTemperature();
+
+        return {co2: dataCo2, humidity: dataHumidity, temperature: dataTemperature};
+    } 
+
+    catch (error) {
+        throw Error('Error getting InfluxDB data: ' + error);
+    }
+}
+
+// Access Points for all locations within a time frame
+export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+    try {
+        
+        const fluxQuery = `from(bucket: "${bucket}")
+                            |> range(start: ${start}, stop: ${stop})
+                            |> filter(fn: (r) => r["_field"] == "value" and r._measurement =~ /^ap_.+/)
+                            `;
+        const data = [];
+        const myQuery = async () => {
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
+                const o = tableMeta.toObject(values);
+                const dataSource = await getDataSourceFromLocationN(o._measurement.split('ap_')[1]);
+                o['location_n'] = dataSource.location_n;
+                o['source_id'] = dataSource.source_id;
+                o['type'] = dataSource.type;
+                o['location'] = dataSource.location;
+                // console.log(
+                // `${o._time} ${o._measurement} in '${o.co2}' (${o.humidity}): ${o._field}=${o._value}`
+                // )
+                data.push(o);
+            }
+            }
+            await myQuery();
+            return data;
+    } 
+
+    catch (error) {
+        throw Error('Error getting InfluxDB data: ' + error);
     }
 }

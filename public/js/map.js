@@ -9,12 +9,15 @@ let map,
   selectedDepartureTime,
   selectedArrivalTime,
   selectedDepartureDate,
-  selectedArrivalDate;
+  selectedArrivalDate
+  selectedStart = "2025-02-10T15:36:00.000Z",
+  selectedStop = "2025-02-10T16:42:00.000Z";
 let currentTotalAirQuality = [];
 let markers = [];
 const center_bald = { lat: 38.23666252117088, lng: 21.732572423403976 }; // euagellobill
-const center_HMTY = [38.28806669351595, 21.78915113469408];
-let default_center = { lat: center_HMTY[0], lng: center_HMTY[1] };
+const center_HMTY = { lat: 38.28806669351595, lng: 21.78915113469408};
+const center_dasylio = {lat: 38.24813853795226, lng: 21.744063705154087}
+let default_center = center_dasylio;
 const googleApiKey = getGoogleApiKey();
 const userIdElemenent = document.getElementById("user-id");
 const userId = userIdElemenent.getAttribute("data-value");
@@ -111,27 +114,42 @@ async function getCoordsFromPlaceName(placeName) {
 }
 
 // HEATMAPS
+// Get the points for the heatmap
+// Heatmap data: 500 Points
+function getHeatmapData() {
+  
+  const accesPoints = JSON.parse(document.getElementById("heatmapData").getAttribute("data-value")).accessPoints;
+  let heatmapData = [];
+  accesPoints.forEach((point) => {
+    const lat = parseFloat(point.location.split(",")[0]);
+    const lng = parseFloat(point.location.split(",")[1]);
+    const heatmapPoint = {location: new google.maps.LatLng(lat, lng), weight: point._value};
+    // console.log(point);
+    heatmapData.push(heatmapPoint);
+    
+  });
+  // console.log(heatmapData.length);
+  return heatmapData;
+}
+
 function toggleHeatmap() {
-  // // Hide the greeting text if it is visible
-  // var greetingText = document.getElementById('greeting-container');
-  // console.log("greetingText", greetingText.style.display);
-  // if (greetingText.style.display === 'block') {
-  //   greetingText.remove();
-  // }
-
-  // //Hide the suggestions form if it is visible
-  // var suggestionsForm = document.getElementById('suggestionsForm');
-  // if (suggestionsForm.style.display === 'block') {
-  //   suggestionsForm.style.display = 'none';
-  // }
-
-  // if (heatmapsForm.style.display === 'none') {
-  //   heatmapsForm.style.display = 'block';
-  // } else {
-  //   heatmapsForm.style.display = 'none';
-  // }
-
-  heatmap.setMap(heatmap.getMap() ? null : map);
+  if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
+    // Default values
+    selectedStart = "2025-02-10T15:36:00.000Z";
+    selectedStop = "2025-02-10T16:42:00.000Z";
+  }
+  else{
+    selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
+    selectedStop = `${selectedArrivalDate}T${selectedArrivalTime}:00.000Z`;
+    // Compare the selected dates to make sure the start date is before the stop date
+    if (new Date(selectedStart) > new Date(selectedStop)) {
+      alert("Please select a valid time range");
+      return;
+    }
+  }
+  
+  window.location.href = `/home?event=HeatmapsButtonClicked|${selectedStart}|${selectedStop}`;
+  
 }
 
 function clearHeatmap() {
@@ -167,23 +185,6 @@ function changeRadius() {
 
 function changeOpacity() {
   heatmap.set("opacity", heatmap.get("opacity") ? null : 0.2);
-}
-
-// Get the points for the heatmap
-// Heatmap data: 500 Points
-function getPoints() {
-  return [
-    new google.maps.LatLng(38.247551, 21.735368),
-    new google.maps.LatLng(38.247745, 21.734586),
-    new google.maps.LatLng(38.247842, 21.733688),
-    new google.maps.LatLng(38.247919, 21.732815),
-    new google.maps.LatLng(38.247992, 21.732112),
-    new google.maps.LatLng(38.2481, 21.731461),
-    new google.maps.LatLng(38.248206, 21.730829),
-    new google.maps.LatLng(38.248273, 21.730324),
-    new google.maps.LatLng(38.248316, 21.730023),
-    new google.maps.LatLng(38.248357, 21.729794),
-  ];
 }
 
 // Get the api key from the backend
@@ -533,10 +534,10 @@ async function initMap() {
   // Get the user's current location
   try {
     const location = await getCurrentLocation();
-    console.log("currentLocation", location);
+    // console.log("currentLocation", location);
 
     const addr = await getAddressFromCoordinates(location); // Get the address of the user's current location
-    console.log("currentAddress", addr);
+    // console.log("currentAddress", addr);
   } catch (error) {
     console.error("Failed to get current location:", error);
   }
@@ -546,20 +547,12 @@ async function initMap() {
 
   map = new Map(document.getElementById("map"), {
     center: default_center, // HMTY 38.26469392470636, 21.742012983437373
-    zoom: 17,
+    zoom: 14,
     mapId: "DEMO_MAP_ID",
     disableDefaultUI: true,
   });
 
-  //// Initialize the heatmap
-  // Create a heatmap
-  heatmap = new google.maps.visualization.HeatmapLayer({
-    data: getPoints(), //Fake data for the time being
-    map: map,
-  });
-
-  //Hide the heatmap by default
-  heatmap.setMap(null);
+  
 
   //// TOP RIGHT CONTROLS
   const topRightControls = document.getElementById("top-right-controls"); //get the top right controls container
@@ -576,6 +569,25 @@ async function initMap() {
   document
     .getElementById("heatmaps_button")
     .addEventListener("click", toggleHeatmap);
+
+    //// Initialize the heatmap
+    // Create a heatmap
+    heatmap = new google.maps.visualization.HeatmapLayer({
+      data: getHeatmapData(), 
+      map: map,
+
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const event = urlParams.get("event");
+
+    //Hide the heatmap by default
+    
+    if (!event) {
+      console.log("oo1111")
+      heatmap.setMap(null);
+    }
+    
 
   // Listener for the "✉️" button
   // Relative information about the user's nearby places and their air quality
@@ -602,7 +614,7 @@ async function initMap() {
   if (userRole === "citizen") {
     const bounds = new google.maps.LatLngBounds();
     // Origin marker
-    console.log("default_center", window.currentLocation);
+    // console.log("default_center", window.currentLocation);
     const originMarker = new AdvancedMarkerElement({
       position: window.currentLocation,
       map: map,
@@ -617,6 +629,8 @@ async function initMap() {
     originMarker.addListener("dragend", async () => {
       const pos = originMarker.position;
       window.selectedOrigin = pos;
+      // Reset the bounds first
+      // bounds = new google.maps.LatLngBounds();
       bounds.extend(originMarker.position);
       bounds.extend(destinationMarker.position);
       map.fitBounds(bounds);
@@ -641,6 +655,8 @@ async function initMap() {
     destinationMarker.addListener("dragend", async () => {
       const pos = destinationMarker.position;
       window.selectedDestination = pos;
+      // Reset the bounds first
+      // bounds = new google.maps.LatLngBounds();
       bounds.extend(originMarker.position);
       bounds.extend(destinationMarker.position);
       map.fitBounds(bounds);
@@ -649,13 +665,18 @@ async function initMap() {
       destinationInput.value = addr;
     });
     
-    bounds.extend(originMarker.position);
-    bounds.extend(destinationMarker.position);
-    map.fitBounds(bounds);
+    // bounds.extend(originMarker.position);
+    // bounds.extend(destinationMarker.position);
+    // map.fitBounds(bounds);
+
+    if (event) {
+      console.log("oooo")
+      heatmap.setMap(heatmap.getMap());
+    }
     
     /////// MAP CONTROLS
     //// TOP LEFT CONTROLS
-    const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container
+    const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container    
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
 
     // Listeners for the search bar
@@ -700,15 +721,29 @@ async function initMap() {
       .getElementById("get_directions")
       .addEventListener("click", showDirections);
 
-
+    // var timeInput = document.getElementById("timeInput");
+    // map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(timeInput);
     var departureTimeElement = document.getElementById("departureTime");
     var arrivalTimeElement = document.getElementById("arrivalTime");
+    var departureDateElement = document.getElementById("departureDate");
+    var arrivalDateElement = document.getElementById("arrivalDate");
+
     // Listener for the departure time
     departureTimeElement
     .addEventListener("change", () => {
       console.log("departureTime changed to", departureTimeElement.value);
       selectedDepartureTime = departureTimeElement.value;
+      console.log("selectedDepartureTime", selectedDepartureTime);  
     });
+    // Listener for the departure date
+    departureDateElement
+    .addEventListener("change", () => {
+      console.log("departureDate changed to", departureDateElement.value);
+      selectedDepartureDate = departureDateElement.value;
+      console.log("selectedDepartureDate", selectedDepartureDate);
+    });
+
+    
 
     // Listener for the arrival time
     arrivalTimeElement
@@ -716,22 +751,19 @@ async function initMap() {
       console.log("arrivalTime changed to", arrivalTimeElement.value);
       selectedArrivalTime = arrivalTimeElement.value;
     });
-
-    var departureDateElement = document.getElementById("departureDate");
-    var arrivalDateElement = document.getElementById("arrivalDate");
-    // Listener for the departure date
-    departureDateElement
-    .addEventListener("change", () => {
-      console.log("departureDate changed to", departureDateElement.value);
-      selectedDepartureDate = departureDateElement.value;
-    });
-
     // Listener for the arrival date
     arrivalDateElement
     .addEventListener("change", () => {
       console.log("arrivalDate changed to", arrivalDateElement.value);
       selectedArrivalDate = arrivalDateElement.value;
     });
+    
+    
+
+
+    
+    
+    
 
   } else if (userRole === "business") {
     var monitoringButton = document.getElementById("monitoringButton");
@@ -758,8 +790,8 @@ async function initMap() {
       console.log(place.geometry.location);
     });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const event = urlParams.get("event");
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const event = urlParams.get("event");
 
     // If you're coming from the /buy_access page
     if (event === "MonitoringButtonClicked" || !event) {

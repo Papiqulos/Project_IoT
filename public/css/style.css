@@ -385,7 +385,7 @@ a {
 }
 
 .search-controls{
-  --padding: 18px;
+  --padding: 14px;
   width: fit-content;
   height: fit-content;
   display: flex;
@@ -396,7 +396,7 @@ a {
   justify-content: space-between;
   background: #f6f6f6;
 
-  margin: 10px;
+  margin: 6px 0 0 6px;
   
   z-index: 2000; 
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
@@ -422,7 +422,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin: 10px;
+  /* margin: 10px; */
 }
 
 .radio{
@@ -464,8 +464,11 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  margin: 10px;
+  /* gap: 10px; */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+  /* margin: 10px; */
 }
 
 .time-container {
@@ -474,11 +477,11 @@ a {
   height: max-content;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+  gap: 15px;
+  /* background: white; */
+  padding: 15px;
+  
+  
 }
 
 .date-container {
@@ -613,8 +616,14 @@ input[type="time"]:focus {
   margin: 10px;
 }
 
-/* RADIO BUTTONS */
 /* TOP RIGHT CONTROLS */
+
+/* #top-right-controls{
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+} */
+
 .general-button-container{
   width: 100%;
   height: 100%;
@@ -630,6 +639,29 @@ input[type="time"]:focus {
 
 .general-button-container .btn{
   width: 90%;
+}
+
+.heatmap_controls{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border-radius: 28px;
+}
+.heatmap_controls .btn{
+  width: 70%;
+}
+
+.air_quality_controls{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border-radius: 28px;
 }
 
 .air-quality-container{

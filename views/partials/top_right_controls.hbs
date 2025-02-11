@@ -1,11 +1,53 @@
-<div id="top-right-controls">
+<div id="top-right-controls" style="">  
       <div id="generalButtonContainer" class="general-button-container">
         <button id="locationButton" class="btn">Your Current Location</button>
-        <button id="heatmaps_button" class="btn">Heatmaps</button>
-        <button id="change-gradient" class="btn">Change Gradient</button>
-        <button id="change-opacity" class="btn">Change Opacity</button>
-        <button id="change-radius" class="btn">Change Radius</button>
+        <div class="heatmap_controls">
+          <button id="heatmaps_button" class="btn" style="width: 90%;">Heatmaps</button>
+          <button id="change-gradient" class="btn">Change Gradient</button>
+          <button id="change-opacity" class="btn">Change Opacity</button>
+          <button id="change-radius" class="btn">Change Radius</button>
+        </div>
+        <div class="air_quality_controls">
+          <button id="air_quality_button" class="btn">Air Quality</button>
+          <div class="travel-mode-controls">
+
+            <label class="radio-container">
+              <input
+                type="radio"
+                class="radio"
+                id="co2"
+                name="aq_metric"
+                value="co2"
+              />
+              <img src="/images/co2.svg" alt="driving" />
+            </label>
+
+            <label class="radio-container">
+              <input
+                type="radio"
+                class="radio"
+                id="humidity"
+                name="aq_metric"
+                value="humidity"
+              />
+              <img src="/images/humidity.svg" alt="walking" />
+            </label>
+
+            <label class="radio-container">
+
+              <input
+                type="radio"
+                class="radio"
+                id="temperature"
+                name="aq_metric"
+                value="temperature"
+              />
+              <img src="/images/temperature.svg" alt="transit" />
+            </label>
+
+          </div>
+        </div>
         <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
         <button id="infoButton" class="btn">✉️</button>
       </div>
-    </div>
+</div>
