@@ -747,6 +747,40 @@ async function initMap() {
       console.log("AFTER status of AQ", heatmapAQ.getMap());
     }
 
+    // Listeners for the start and stop date and time
+    var departureTimeElement = document.getElementById("departureTime");
+    var arrivalTimeElement = document.getElementById("arrivalTime");
+    var departureDateElement = document.getElementById("departureDate");
+    var arrivalDateElement = document.getElementById("arrivalDate");
+
+    // Listener for the departure time
+    departureTimeElement
+    .addEventListener("change", () => {
+      console.log("departureTime changed to", departureTimeElement.value);
+      selectedDepartureTime = departureTimeElement.value;
+      console.log("selectedDepartureTime", selectedDepartureTime);  
+    });
+    // Listener for the departure date
+    departureDateElement
+    .addEventListener("change", () => {
+      console.log("departureDate changed to", departureDateElement.value);
+      selectedDepartureDate = departureDateElement.value;
+      console.log("selectedDepartureDate", selectedDepartureDate);
+    });
+
+    // Listener for the arrival time
+    arrivalTimeElement
+    .addEventListener("change", () => {
+      console.log("arrivalTime changed to", arrivalTimeElement.value);
+      selectedArrivalTime = arrivalTimeElement.value;
+    });
+    // Listener for the arrival date
+    arrivalDateElement
+    .addEventListener("change", () => {
+      console.log("arrivalDate changed to", arrivalDateElement.value);
+      selectedArrivalDate = arrivalDateElement.value;
+    });
+
   if (userRole === "citizen") {
     
     const bounds = new google.maps.LatLngBounds();
@@ -849,39 +883,7 @@ async function initMap() {
       .getElementById("get_directions")
       .addEventListener("click", showDirections);
 
-    // Listeners for the start and stop date and time
-    var departureTimeElement = document.getElementById("departureTime");
-    var arrivalTimeElement = document.getElementById("arrivalTime");
-    var departureDateElement = document.getElementById("departureDate");
-    var arrivalDateElement = document.getElementById("arrivalDate");
-
-    // Listener for the departure time
-    departureTimeElement
-    .addEventListener("change", () => {
-      console.log("departureTime changed to", departureTimeElement.value);
-      selectedDepartureTime = departureTimeElement.value;
-      console.log("selectedDepartureTime", selectedDepartureTime);  
-    });
-    // Listener for the departure date
-    departureDateElement
-    .addEventListener("change", () => {
-      console.log("departureDate changed to", departureDateElement.value);
-      selectedDepartureDate = departureDateElement.value;
-      console.log("selectedDepartureDate", selectedDepartureDate);
-    });
-
-    // Listener for the arrival time
-    arrivalTimeElement
-    .addEventListener("change", () => {
-      console.log("arrivalTime changed to", arrivalTimeElement.value);
-      selectedArrivalTime = arrivalTimeElement.value;
-    });
-    // Listener for the arrival date
-    arrivalDateElement
-    .addEventListener("change", () => {
-      console.log("arrivalDate changed to", arrivalDateElement.value);
-      selectedArrivalDate = arrivalDateElement.value;
-    });
+    
     
     
 
