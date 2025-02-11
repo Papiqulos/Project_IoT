@@ -10,39 +10,62 @@ dotenv.config()
 export async function home(req, res, next) {
     const user = await model.getUserByUsername(req.session.loggedUserId);
     let influxDataAirQualityAll, influxDataAccessPointsAll;
+    
     try {
-        console.log("home");
-        const event = req.query.event;
-        
-        if (event){
-            // console.log("Event: ", event);
-            const start = event.split("|")[1];
-            const stop = event.split("|")[2];
-            // console.log("Start: ", start);
-            // console.log("Stop: ", stop);
-            influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
-            influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
+        if (!user) {
+            console.log("User not found");
+            res.render('home', { session: req.session, 
+                user: user,  
+                influxData: { airQuality: 0, accessPoints: 0 } });
         }
-        else {
-            // const influxDataAirQualityELTA = await model.getInfluxDataAirQuality();
-            // console.log("Influx Data Air Quality: ", influxDataAirQualityELTA[600]);
+        else{
+            if (user.role === "citizen") {
+                console.log("home");
+                const event = req.query.event;
+                
+                if (event){
+                    // console.log("Event: ", event);
+                    const start = event.split("|")[1];
+                    const stop = event.split("|")[2];
+                    // console.log("Start: ", start);
+                    // console.log("Stop: ", stop);
+                    influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
+                    influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
+                }
+                else {
+                    // const influxDataAirQualityELTA = await model.getInfluxDataAirQuality();
+                    // console.log("Influx Data Air Quality: ", influxDataAirQualityELTA[600]);
 
-            // const influxDataAccessPointsStroumpio = await model.getInfluxDataAccessPoints();
-            // console.log("Influx Data Access Points: ", influxDataAccessPointsStroumpio[0]);
+                    // const influxDataAccessPointsStroumpio = await model.getInfluxDataAccessPoints();
+                    // console.log("Influx Data Access Points: ", influxDataAccessPointsStroumpio[0]);
 
-            // Get the default data for the heatmap
-            influxDataAirQualityAll = await model.getInfluxDataAirQualityAll();
-            // console.log("Influx Data Air Quality All: ", influxDataAirQualityAll);
+                    // Get the default data for the heatmap
+                    influxDataAirQualityAll = await model.getInfluxDataAirQualityAll();
+                    // console.log("Influx Data Air Quality All: ", influxDataAirQualityAll);
 
-            influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll();
-            // console.log("Influx Data Access Points All: ", influxDataAccessPointsAll);
-            
+                    influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll();
+                    // console.log("Influx Data Access Points All: ", influxDataAccessPointsAll);
+                    
+                }
+            }
+            else if (user.role === "business") {
+                const business = await model.getBusinessByUsername(req.session.loggedUserId);
+                const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id);
+                influxDataAirQualityAll = influxDataOfBusiness.airQuality;
+                influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
+                console.log("AQ of business: ", influxDataAirQualityAll.length);
+                console.log("AP of business ", influxDataAccessPointsAll.length);
+            }
+            else if (user.role === "admin") {
+                console.log("Admin home");
+            }
+            res.render('home', { session: req.session, 
+                user: user,  
+                influxData: { airQuality: influxDataAirQualityAll, accessPoints: influxDataAccessPointsAll } });
         }
         
 
-        res.render('home', { session: req.session, 
-            user: user,  
-            influxData: { airQuality: influxDataAirQualityAll, accessPoints: influxDataAccessPointsAll } });
+        
     
     }
     catch (error) {

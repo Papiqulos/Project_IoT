@@ -430,3 +430,51 @@ export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15
         throw Error('Error getting InfluxDB data: ' + error);
     }
 }
+
+export let getInfluxDataOfBusiness = async function (businessId, start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+    try {
+        const sources = await getBusinessSourcesFromBusinessId(businessId);
+        const dataAP = [];
+        const dataAQCo2 = [];
+        const dataAQHumidity = [];
+        const dataAQTemperature = [];
+        for (const source of sources) {
+            if (source.type == 'airquality') {
+                // Get all the air quality data for the time frame
+                const airQualityData = await getInfluxDataAirQualityAll(start, stop);
+                const dataCo2 = airQualityData.co2;
+                const dataHumidity = airQualityData.humidity;
+                const dataTemperature = airQualityData.temperature
+                // Filter the data and return only the data that the business has access to for every metric
+                dataCo2.forEach(element => {
+                    if (element.source_id == source.source_id) {
+                        dataAQCo2.push(element);
+                    }
+                });
+                dataHumidity.forEach(element => {
+                    if (element.source_id == source.source_id) {
+                        dataAQHumidity.push(element);
+                    }
+                });
+                dataTemperature.forEach(element => {
+                    if (element.source_id == source.source_id) {
+                        dataAQTemperature.push(element);
+                    }
+                });
+                
+            } 
+            else if (source.type == 'wifi') {
+                const accessPointsData = await getInfluxDataAccessPointsAll(start, stop);
+                accessPointsData.forEach(element => {
+                    if (element.source_id == source.source_id) {
+                        dataAP.push(element);
+                    }
+                });
+            }
+        }
+        return {airQuality: {co2: dataAQCo2, humidity: dataAQHumidity, temperature: dataAQTemperature}, accessPoints: dataAP};
+    } 
+    catch (error) {
+        throw Error('Error getting InfluxDB data: ' + error);
+    }
+}

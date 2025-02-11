@@ -135,7 +135,7 @@ function getHeatmapData() {
   return heatmapData;
 }
 
-// Show the heatmap from the access points on the map
+// Show the heatmap from the access points on the map (CIZIZEN ROLE)
 function toggleHeatmap() {
   if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
     // Default values
@@ -162,6 +162,11 @@ function toggleHeatmap() {
   
   window.location.href = `/home?event=HeatmapsButtonClicked|${selectedStart}|${selectedStop}`;
   
+}
+
+// Show the heatmap from the access points that the business has acces to on the map (BUSINESS ROLE)
+function toggleHeatmapB() {
+  console.log("toggleHeatmapB");
 }
 
 // NOT USED
@@ -334,6 +339,11 @@ function toggleAirQualityAll() {
   window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
 }
 
+// Show the air quality information based on the selected time range and metric for the business
+function toggleAirQualityAllB() {
+  console.log("toggleAirQualityB");
+}
+
 // Show the air quality information based on his selected route
 async function toggleAirQualityTrip() {
   try {
@@ -393,6 +403,11 @@ async function toggleAirQualityTrip() {
   } catch (error) {
     console.error(error);
   }
+}
+
+// Show the air quality information based on the business
+async function toggleAirQualityTripB() {
+  console.log("toggleAirQualityTripB");
 }
 
 // VARIOUS SEARCHES
@@ -656,12 +671,6 @@ async function initMap() {
     .getElementById("locationButton")
     .addEventListener("click", toggleCurrentLocation);
 
-  // Listener for the "HEATMAPS" button
-  // Toggles the heatmap on the map
-  document
-    .getElementById("heatmaps_button")
-    .addEventListener("click", toggleHeatmap);
-
     const urlParams = new URLSearchParams(window.location.search);
     let event, start, stop, metric;
     // If the URL contains an event parameter, get the parameters
@@ -676,24 +685,70 @@ async function initMap() {
     else{
       metric = "co2";
     }
+    // Listener for the "HEATMAPS" button
+    // Toggles the heatmap on the map
+    document
+    .getElementById("heatmaps_button")
+    .addEventListener("click", toggleHeatmap);
+    
+    // Toggles the air quality information on the map
+    document
+      .getElementById("air_quality_button")
+      .addEventListener("click", toggleAirQualityAll);
 
-  // Toggles the air quality information on the map
-  document
-    .getElementById("air_quality_button")
-    .addEventListener("click", toggleAirQualityAll);
+    // Listener for the "✉️" button
+    // Relative information about the user's nearby places and their air quality
+    document
+      .getElementById("infoButton")
+      .addEventListener("click", toggleAirQualityTrip);
+    //// Initialize the heatmaps (AP and AQ)
+    // Create a heatmap for the access points
+    heatmapAP = new google.maps.visualization.HeatmapLayer({
+      data: getHeatmapData(), 
+      map: map,
 
-  // Listener for the "✉️" button
-  // Relative information about the user's nearby places and their air quality
-  document
-    .getElementById("infoButton")
-    .addEventListener("click", toggleAirQualityTrip);
+    });
+    // Create a heatmap for the air quality sensors
+    heatmapAQ = new google.maps.visualization.HeatmapLayer({
+      data: getAirQualityDataAll(metric),
+      map: map,
+    });
 
-  // Listeners for map actions
-  map.addListener("dragend", () => {
-    console.log("dragend");
-  });
+    // If the URL does not contain an event parameter, hide both heatmaps
+    if (!event) {
+      console.log("url does not contain event");
+      heatmapAP.setMap(null);
+      heatmapAQ.setMap(null);
+    }
+
+    // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
+    if (event === "HeatmapsButtonClicked") {
+      console.log("toggling AP and hiding AQ");
+      console.log("BEFORE status of AP", heatmapAP.getMap());
+      console.log("BEFORE status of AQ", heatmapAQ.getMap());
+
+      heatmapAQ.setMap(null);
+      heatmapAP.setMap(map);
+
+      console.log("AFTER status of AP", heatmapAP.getMap());
+      console.log("AFTER status of AQ", heatmapAQ.getMap());
+    }
+
+    // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
+    if (event === "AirQualityButtonClicked") {
+      console.log("toggling AQ and hiding AP");
+      console.log("BEFORE status of AP", heatmapAP.getMap());
+      console.log("BEFORE status of AQ", heatmapAQ.getMap());
+
+      heatmapAP.setMap(null);
+      heatmapAQ.setMap(map);
+
+      console.log("AFTER status of AP", heatmapAP.getMap());
+      console.log("AFTER status of AQ", heatmapAQ.getMap());
+    }
 
   if (userRole === "citizen") {
+    
     const bounds = new google.maps.LatLngBounds();
 
     //// MARKERS FOR DIRECTIONS
@@ -746,52 +801,6 @@ async function initMap() {
       var destinationInput = document.getElementById("destination_input");
       destinationInput.value = addr;
     });
-    
-    //// Initialize the heatmaps (AP and AQ)
-    // Create a heatmap for the access points
-    heatmapAP = new google.maps.visualization.HeatmapLayer({
-      data: getHeatmapData(), 
-      map: map,
-
-    });
-    // Create a heatmap for the air quality sensors
-    heatmapAQ = new google.maps.visualization.HeatmapLayer({
-      data: getAirQualityDataAll(metric),
-      map: map,
-    });
-
-    // If the URL does not contain an event parameter, hide both heatmaps
-    if (!event) {
-      console.log("url does not contain event");
-      heatmapAP.setMap(null);
-      heatmapAQ.setMap(null);
-    }
-
-    // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
-    if (event === "HeatmapsButtonClicked") {
-      console.log("toggling AP and hiding AQ");
-      console.log("BEFORE status of AP", heatmapAP.getMap());
-      console.log("BEFORE status of AQ", heatmapAQ.getMap());
-
-      heatmapAQ.setMap(null);
-      heatmapAP.setMap(map);
-
-      console.log("AFTER status of AP", heatmapAP.getMap());
-      console.log("AFTER status of AQ", heatmapAQ.getMap());
-    }
-
-    // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
-    if (event === "AirQualityButtonClicked") {
-      console.log("toggling AQ and hiding AP");
-      console.log("BEFORE status of AP", heatmapAP.getMap());
-      console.log("BEFORE status of AQ", heatmapAQ.getMap());
-
-      heatmapAP.setMap(null);
-      heatmapAQ.setMap(map);
-
-      console.log("AFTER status of AP", heatmapAP.getMap());
-      console.log("AFTER status of AQ", heatmapAQ.getMap());
-    }
     
     //// MAP CONTROLS
     // TOP LEFT CONTROLS
@@ -882,6 +891,7 @@ async function initMap() {
     
 
   } else if (userRole === "business") {
+    
     var monitoringButton = document.getElementById("monitoringButton");
     var analyticsButton = document.getElementById("analyticsButton");
     var mapContainer = document.getElementById("map");
