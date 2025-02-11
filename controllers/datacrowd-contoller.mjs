@@ -9,13 +9,14 @@ dotenv.config()
 //Show the home page
 export async function home(req, res, next) {
     const user = await model.getUserByUsername(req.session.loggedUserId);
-    let influxDataAirQualityAll, influxDataAccessPointsAll;
+    let influxDataAirQualityAll, influxDataAccessPointsAll, business;
     
     try {
         if (!user) {
             console.log("User not found");
             res.render('home', { session: req.session, 
-                user: user,  
+                user: user,
+                business: business,  
                 influxData: { airQuality: 0, accessPoints: 0 } });
         }
         else{
@@ -49,7 +50,7 @@ export async function home(req, res, next) {
                 }
             }
             else if (user.role === "business") {
-                const business = await model.getBusinessByUsername(req.session.loggedUserId);
+                business = await model.getBusinessByUsername(req.session.loggedUserId);
                 const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id);
                 influxDataAirQualityAll = influxDataOfBusiness.airQuality;
                 influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
@@ -61,6 +62,7 @@ export async function home(req, res, next) {
             }
             res.render('home', { session: req.session, 
                 user: user,  
+                business: business,
                 influxData: { airQuality: influxDataAirQualityAll, accessPoints: influxDataAccessPointsAll } });
         }
         

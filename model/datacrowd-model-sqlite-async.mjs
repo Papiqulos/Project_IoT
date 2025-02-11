@@ -178,7 +178,7 @@ export let getAllDataSources = async function (){
 // Get the sources that the business has access to
 export let getBusinessSourcesFromBusinessId = async function (businessId){
     try {
-        const sources = await sql.all(`SELECT Data_Source.type, Data_Source.source_id, Data_Source.location, Business.business_id 
+        const sources = await sql.all(`SELECT Data_Source.type, Data_Source.source_id, Data_Source.location, Business.business_id, Data_Source.location_n 
                                         From Data_Source JOIN Has_Access JOIN Business On Data_Source.source_id = Has_Access.source_id and Business.business_id = Has_Access.business_id 
                                         WHERE Business.business_id = ?`, businessId);
         return sources;
@@ -412,6 +412,9 @@ export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15
             for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
                 const o = tableMeta.toObject(values);
                 const dataSource = await getDataSourceFromLocationN(o._measurement.split('ap_')[1]);
+                if (dataSource == undefined) {
+                    continue;
+                }
                 o['location_n'] = dataSource.location_n;
                 o['source_id'] = dataSource.source_id;
                 o['type'] = dataSource.type;

@@ -907,6 +907,8 @@ async function initMap() {
 
     // If you're coming from the /buy_access page
     if (event === "MonitoringButtonClicked" || !event) {
+      heatmapAP.setMap(null);
+      heatmapAQ.setMap(null);
       console.log("Monitoring Button Clicked")
 
       // Show the map
@@ -928,7 +930,7 @@ async function initMap() {
       topRightControls.style.display = "none";
 
       // Show the Grafana Dashboard
-      grafanaContainer.style.display = "block";
+      grafanaContainer.style.display = "flex";
 
     }
     
@@ -953,7 +955,7 @@ async function initMap() {
       mapContainer.style.display = "none";
 
       // Show the Grafana Dashboard
-      grafanaContainer.style.display = "block";
+      grafanaContainer.style.display = "flex";
 
     });
 
@@ -1087,7 +1089,7 @@ async function initMap() {
         mapContainer.style.display = "none";
   
         // Show the Grafana Dashboard
-        grafanaContainer.style.display = "block";
+        grafanaContainer.style.display = "flex";
   
         // Show the search bar
         analyticsSearchBar.style.display = "block";

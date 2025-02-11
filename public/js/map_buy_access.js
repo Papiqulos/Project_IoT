@@ -72,7 +72,8 @@ async function initMap() {
     bounds.extend({ lat: lat, lng: lng });
     bSmarker.addListener("click", () => {
         infoWindow.close();
-        infoWindow.setContent(source.type);
+
+        infoWindow.setContent(source.type+" "+source.location_n+" "+source.source_id);
         infoWindow.open(bSmarker.map, bSmarker);
     });
 
@@ -96,7 +97,7 @@ async function initMap() {
         bounds.extend({ lat: lat, lng: lng });
         aSmarker.addListener("click", () => {
             infoWindow.close();
-            infoWindow.setContent(source.type);
+            infoWindow.setContent(source.type+" "+source.location_n+" "+source.source_id);
             infoWindow.open(aSmarker.map, aSmarker);
         });
  });
