@@ -175,14 +175,14 @@ export let getBusinessSourcesFromBusinessId = async function (businessId){
 // Get the sources that the business does not have access to
 export let getAvailableSourcesFromBusinessId = async function (businessId){
     try {
-        const sources = await sql.all(`SELECT DISTINCT Data_Source.source_id, Data_Source.type, Data_Source.location 
-                                        From Data_Source JOIN Has_Access JOIN Business On Data_Source.source_id = Has_Access.source_id and Business.business_id = Has_Access.business_id 
-                                        where Business.business_id != ? and  Has_Access.source_id not in 
-                                            (
-                                                SELECT source_id 
-                                                from Has_Access JOIN Business on Business.business_id = Has_Access.business_id 
-                                                where Business.business_id = ?
-                                            )`, businessId, businessId);
+        const sources = await sql.all(`SELECT *
+                                        FROM Data_Source
+                                        WHERE (type, source_id, location, location_n )NOT IN (
+                                            SELECT Data_Source.type, Data_Source.source_id, Data_Source.location, Data_Source.location_n
+                                            From Data_Source JOIN Has_Access JOIN Business On Data_Source.source_id = Has_Access.source_id and Business.business_id = Has_Access.business_id 
+                                            WHERE Business.business_id = ? 
+
+                                        )`, businessId);
         return sources;
     } 
     catch (error) {

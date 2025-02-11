@@ -92,6 +92,7 @@ export async function buyAccess(req, res, next) {
         const user = await model.getUserByUsername(req.session.loggedUserId);
         const business = await model.getBusinessByUsername(req.session.loggedUserId);
         const availableSources = await model.getAvailableSourcesFromBusinessId(business.business_id);
+        const allSources = await model.getAllDataSources();
         const businessSources = await model.getBusinessSourcesFromBusinessId(business.business_id);
         res.render('buy_access', { session: req.session, user: user, business: business , availableSources: availableSources, businessSources: businessSources });
     }
