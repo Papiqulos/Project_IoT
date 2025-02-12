@@ -1,0 +1,13 @@
+address,name,type,business_id,username,ZIP,city
+addressb1,businessN1,type1,1,busy2,12342,Athens
+addressb2,businessN2,type2,2,busy3,12342,Athens
+addressb3,businessN4,type3,3,busy4,12342,Athens
+addressb4,businessN5,type2,4,busy5,12342,Athens
+addressb5,businessN6,type2,5,busy6,12311,Athens
+Korinthou 5,Bisna1,FFFFFFF,6,sgd,12334,Athens
+ΚΟΡΙΝΘΟΥ 1,Bisna11,FFFFFFF,7,adsg,26223,ΠΑΤΡΕΩΝ
+τριπολεος,Bisna11111,geo,8,uer2,15231,ΧΑΛΑΝΔΡΙ
+ΚΟΡΙΝΘΟΥ 105,Bisna1111112,geo,9,bbbbbbb,26223,ΠΑΤΡΑ
+ΚΟΡΙΝΘΟΥ,Bisna134762346,Security,10,busy124,26223,ΠΑΤΡΕΩΝ
+Πλατεία Βασιλέως Γεωργίου Α΄ 11,Caravel,Bakery,11,caravel,262 21,Πάτρα 
+Λεωφ. Ιπποκράτους,University of Patras,Πανεπιστήμιο,12,uop,265 04,Πάτρα 

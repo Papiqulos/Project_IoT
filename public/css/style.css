@@ -385,13 +385,22 @@ a {
 }
 
 #grafanaContainer > :first-child {
-  /* Add your styles here */
   border-radius: 12px 0px 0px 12px;
 }
 
 #grafanaContainer > :last-child {
-  /* Add your styles here */
   border-radius: 0px 12px 12px 0px;
+}
+
+@media (max-width: 768px) {
+  #grafanaContainer{
+    flex-direction: column;
+  }
+  .grafana-subcontainer{
+    width: 100%;
+    height: 50%;
+  }
+  
 }
 
 /* THE MAP */
@@ -491,11 +500,13 @@ a {
   box-shadow: 0 0 5px #3C4FE0;
 }
 
+/* BOTTOM RIGHT CONTROLS */
 .times-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 15px;
   /* gap: 10px; */
   background: white;
   border-radius: 12px;
@@ -590,6 +601,57 @@ input[type="time"]:hover {
 input[type="time"]:focus {
   border-color: #002080;
   box-shadow: 0 0 8px rgba(0, 0, 255, 0.5);
+}
+
+.time-input-container{
+  display: flex;
+  flex-direction: row;
+  /* justify-content: center;
+  align-items: center;
+  gap: 10px; */
+}
+
+.slidecontainer {
+  padding: 20px 10px 10px 10px;
+  width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 15px; /* Specified height */
+  border-radius: 5px; /* Rounded slider */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  border-radius: 50%; /* Round slider handle */
+  background: #3c4fe0; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  border-radius: 50%; /* Round slider handle */
+  background: #3c4fe0; /* Green background */
+  cursor: pointer; /* Cursor on hover */
 }
 
 .results{
