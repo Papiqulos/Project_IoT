@@ -13,6 +13,9 @@ router.route('/').get((req, res) => {
     res.redirect('/home') 
 });
 
+//Eyyo
+router.get('/eyyo', dataCrowdController.eyyo);
+
 //Home page
 router.get('/home', dataCrowdController.home);
 

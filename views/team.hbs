@@ -1,19 +1,61 @@
-<select id="dropdown" onchange="checkCustomOption(this)">
-  <option value="Option 1">Option 1</option>
-  <option value="Option 2">Option 2</option>
-  <option value="Option 3">Option 3</option>
-  <option value="custom">Other...</option>
-</select>
-<input type="text" id="customInput" placeholder="Enter custom value" style="display:none;" />
-
-<script>
-  function checkCustomOption(select) {
-    let customInput = document.getElementById("customInput");
-    if (select.value === "custom") {
-      customInput.style.display = "inline";
-      customInput.focus();
-    } else {
-      customInput.style.display = "none";
-    }
-  }
-</script>
+<style>
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(to right, #102a43, #1a365d);
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  width: 80%;
+  margin: auto;
+  padding: 20px;
+}
+.team-section, .faq-section {
+  background: white;
+  padding: 30px;
+  margin-bottom: 30px;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+.team-section:hover, .faq-section:hover {
+  transform: translateY(-5px);
+}
+.team-title, .faq-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #3C4FE0;
+  border-bottom: 2px solid #3C4FE0;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+.member {
+  margin: 15px 0;
+  font-size: 18px;
+}
+.faq {
+  margin-top: 25px;
+}
+.question {
+  font-weight: bold;
+  margin-top: 15px;
+  font-size: 20px;
+  color: #3C4FE0;
+}
+p {
+  font-size: 20px;
+  line-height: 1.6;
+}
+</style>
+<div class="team-section">
+        <div class="team-title">Meet Our Team</div>
+        <p>We are two university students passionate about IoT and smart city solutions. Our project, <strong>DataCrowd</strong>, aims to improve urban mobility by analyzing congestion in public areas using real-time data from sensors and APIs.</p>
+        <div class="member">
+            <strong>Konstantinos Tsampras:</strong> Expert in IoT, backend development, and data analytics.
+        </div>
+        <div class="member">
+            <strong>Giorgos Papoutsas:</strong> Specializes in frontend/backend development, UI/UX design, and API integration.
+        </div>
+    </div>

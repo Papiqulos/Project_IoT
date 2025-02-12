@@ -30,7 +30,8 @@ const userRoleElemenent = document.getElementById("user-role");
 const userRole = userRoleElemenent.getAttribute("data-value");
 console.log("user role: ", userRole); // Outputs the Handlebars variable
 let influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
-console.log("influxData", influxData);
+// console.log("influxData", influxData);
+let egb = 0;
 
 // HELPER FUNCTIONS - NOT ALL USED 
 function componentToHex(c) {
@@ -536,6 +537,12 @@ async function getTop3AP() {
 
 // Show the air quality information based on his selected route
 async function toggleInfoTrip() {
+  egb++;
+  console.log("egb", egb);
+  if (egb > 30){
+    window.location.href = "/eyyo ";
+    egb=0;
+  }
   try {
     const averageLevels = getAverageMetricLevels();
     const top3AP = await getTop3AP();
@@ -755,18 +762,18 @@ async function textSearchPlace(text, results = 15) {
 async function getDirections(origin, destination, travelMode = "DRIVING", departureTime = new Date(), arrivalTime = new Date() + 1) {
   
   // Clear any existing directions
-  clearDirections();
+  // clearDirections();
   // Clear any existing markers
-  clearMarkers();
+  // clearMarkers();
   var directionsService = new google.maps.DirectionsService();
   var directionsRenderer = new google.maps.DirectionsRenderer();
   currentDirections = directionsRenderer;
   directionsRenderer.setMap(map);
-  console.log("origin", origin);
-  console.log("destination", destination);
-  console.log("travelMode", travelMode);
-  console.log("departureTime", departureTime);
-  console.log("arrivalTime", arrivalTime);
+  // console.log("origin", origin);
+  // console.log("destination", destination);
+  // console.log("travelMode", travelMode);
+  // console.log("departureTime", departureTime);
+  // console.log("arrivalTime", arrivalTime);
   var request = {
     origin: origin,
     destination: destination,
@@ -856,7 +863,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
                 const dist = google.maps.geometry.spherical.computeDistanceBetween(point, gAccessPoint);
                 // console.log("dist", dist);
                 if (dist < 30) {
-                  console.log(gAccessPoint);
+                  // console.log(gAccessPoint);
                   // Add a marker for path points that are close to access points
                   if(accessPoint.weight > 40){
                     const pin = new PinElement({
@@ -877,7 +884,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
                       infoWindow.open(markerView.map, markerView);
                     });
                     window.markers.push(markerView);
-                    console.log("Access Point found");
+                    // console.log("Access Point found");
                   }
                 }
               });
@@ -923,9 +930,10 @@ async function showDirections() {
 
 // Function to clear directions
 function clearDirections() {
-  console.log("clearing directions");
+  
   // Remove any directions visible on the map
   if (currentDirections) {
+    console.log("clearing directions");
     currentDirections.setMap(null);
   } else {
     console.log("No directions found");
@@ -1154,7 +1162,7 @@ async function initMap() {
     });
 
     map.addListener("zoom_changed", () => {
-      console.log("zoom changed", map.getZoom());
+      // console.log("zoom changed", map.getZoom());
       changeRadius(map.getZoom());
     });
 
@@ -1244,6 +1252,7 @@ async function initMap() {
     originMarker.addListener("dragend", async () => {
       const pos = originMarker.position;
       window.selectedOrigin = pos;
+      
       // Reset the bounds first
       // bounds = new google.maps.LatLngBounds();
       bounds.extend(originMarker.position);
@@ -1252,6 +1261,27 @@ async function initMap() {
       const addr = await getAddressFromCoordinates(pos);
       var originInput = document.getElementById("origin_input");
       originInput.value = addr;
+      
+      try{
+        const dist_bald = await google.maps.geometry.spherical.computeDistanceBetween(pos, center_bald);
+        // console.log("dist_bald", dist_bald);
+        if (dist_bald < 100){
+          // console.log("billaras");
+          // Change the glyph of the marker
+          originMarker.content = new PinElement({
+            glyph: "🧑🏼‍🦲",
+            scale: 1.5,
+          }).element;
+        }
+        else{
+          originMarker.content = new PinElement({
+            glyph: "🏠",
+            scale: 1.5,
+          }).element;
+        }
+      } catch (error) {
+        console.log("nothing to see here")
+      }
     });
     
     // Destination marker

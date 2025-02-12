@@ -1,0 +1,76 @@
+
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(to right, #102a43, #1a365d);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        .team-section, .faq-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+        .team-section:hover, .faq-section:hover {
+            transform: translateY(-5px);
+        }
+        .team-title, .faq-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #3C4FE0;
+            border-bottom: 2px solid #3C4FE0;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .member {
+            margin: 15px 0;
+            font-size: 18px;
+        }
+        .faq {
+            margin-top: 25px;
+        }
+        .question {
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 20px;
+            color: #3C4FE0;
+        }
+        p {
+            font-size: 20px;
+            line-height: 1.6;
+        }
+    </style>
+
+
+<div class="container">
+    
+
+    <div class="faq-section">
+        <div class="faq-title">Frequently Asked Questions</div>
+        <div class="faq">
+            <div class="question">What is DataCrowd?</div>
+            <p>Public Hotspots is an IoT-based application that collects real-time data on crowd congestion in public spaces like bus stops and restaurants.</p>
+            
+            <div class="question">How does the system collect data?</div>
+            <p>We use sensors (CO2, temperature, cameras, etc.) combined with Google Places API and Eduroam network insights to analyze crowd density.</p>
+            
+            <div class="question">Who can benefit from this?</div>
+            <p>Commuters, city planners, business owners, and authorities can use the insights for better decision-making.</p>
+            
+            <div class="question">Is the data collected in real-time?</div>
+            <p>Yes, our system updates continuously to provide real-time insights and alerts.</p>
+        </div>
+    </div>
+</div>
+
+

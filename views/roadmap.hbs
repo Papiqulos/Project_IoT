@@ -1,0 +1,114 @@
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #102a43, #1a365d);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #3C4FE0;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #3C4FE0;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+        .milestone {
+            padding: 20px;
+            position: relative;
+            background-color: #fff;
+            border-radius: 6px;
+            width: 45%;
+            border-color: #3C4FE0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .milestone:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .left {
+            left: 0;
+        }
+        .right {
+            left: 55%;
+        }
+        .milestone::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #3C4FE0;
+            border-radius: 50%;
+            top: 15px;
+            left: -10px;
+        }
+        .right::before {
+            left: auto;
+            right: -10px;
+        }
+        @media screen and (max-width: 600px) {
+            .timeline::after {
+                left: 20px;
+            }
+            .milestone {
+                width: 90%;
+                left: 5%;
+            }
+            .right {
+                left: 5%;
+            }
+        }
+    </style>
+
+    <div class="container">
+        <h1>Roadmap - Future Improvements</h1>
+        <div class="timeline">
+            <div class="milestone left">
+                <h3>Phase 1 - Beta Launch</h3>
+                <p>Initial deployment at the university campus, integrating Google Places API and basic congestion data.</p>
+            </div>
+            <div class="milestone right">
+                <h3>Phase 2 - Advanced Analytics</h3>
+                <p>Implement AI-powered crowd prediction, improve sensor data accuracy, and optimize performance.</p>
+            </div>
+            <div class="milestone left">
+                <h3>Phase 3 - City-Wide Expansion</h3>
+                <p>Expand coverage beyond the university to major bus stations and business districts.</p>
+            </div>
+            <div class="milestone right">
+                <h3>Phase 4 - Mobile App</h3>
+                <p>Develop Android & iOS apps with real-time alerts and heatmap visualizations.</p>
+            </div>
+            <div class="milestone left">
+                <h3>Phase 5 - Smart City Integration</h3>
+                <p>Collaborate with city authorities for better urban planning using real-time insights.</p>
+            </div>
+        </div>
+    </div>
+

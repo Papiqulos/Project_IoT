@@ -140,6 +140,11 @@ a {
   width: 100%;
 }
 
+.main-footer p{
+  font-size: 12px;
+  color: rgb(0, 0, 0);
+}
+
 /* MAIN CONTENT */
 .main-container{
   display: flex;

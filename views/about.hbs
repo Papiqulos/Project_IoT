@@ -1,1 +1,104 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #102a43, #1a365d);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 700px;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #3C4FE0;
+        }
+        .section {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        .section-header {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+        }
+        .orange { background: #e67e22; border: 2px solid #e67e22; }
+        .green-light { background: #8bc34a; border: 2px solid #8bc34a; }
+        .green-dark { background: #2e7d32; border: 2px solid #2e7d32; }
+        .description {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .icon {
+            float: right;
+            font-size: 30px;
+            color: #3C4FE0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="title">Solutions</div>
+
+    <div class="section">
+        <div class="section-header orange">Inform Public for better decision making</div>
+        <div class="icon">📊</div>
+        <div class="description">
+            • Real-time data and Predictions <br>
+            • Suggestions and Alerts
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header green-light">Monitoring Tools for Authorities & Businesses</div>
+        <div class="icon">📉</div>
+        <div class="description">
+            • Crowd Overview <br>
+            • Insights for better resource allocation <br>
+            • Alerting and notifying
+        </div>
+    </div>
+
+    {{!-- <div class="section">
+        <div class="section-header green-dark">Tools for Long Term Planning</div>
+        <div class="icon">📋</div>
+        <div class="description">
+            • Insights about infrastructure planning in popular areas <br>
+            • Effectiveness evaluation for measures taken
+        </div>
+    </div> --}}
+</div>
+
+</body>
+</html>

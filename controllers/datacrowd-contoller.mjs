@@ -4,7 +4,15 @@ import axios from 'axios';
 import dotenv from 'dotenv'
 dotenv.config()
 
-
+//eyyo
+export async function eyyo(req, res, next) {
+    try{
+        res.render('eyyo');
+    }
+    catch (error) {
+        next(error);
+    }
+}
 
 //Show the home page
 export async function home(req, res, next) {
