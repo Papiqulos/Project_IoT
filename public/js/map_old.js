@@ -121,114 +121,21 @@ async function getCoordsFromPlaceName(placeName) {
 
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
-async function getHeatmapData() {
+function getHeatmapData() {
+  
   const accesPoints = influxData.accessPoints;
   const dataCo2 = influxData.airQuality.co2;
-  const compressedAccessPoints = {};
-  const AP_counts = {};
-  const compressedDataCo2 = {};
-  const CO2_counts = {};
   let heatmapData = [];
-
-  // Compress Access Points
   accesPoints.forEach((point) => {
-    if (!compressedAccessPoints[point.location_n]) {
-      compressedAccessPoints[point.location_n] = { location: point.location, _value: point._value };
-      AP_counts[point.location_n] = 1;
-    } else {
-      compressedAccessPoints[point.location_n]._value += point._value;
-      AP_counts[point.location_n] += 1;
-    }
-  });
-
-  // Calculate Averages
-  Object.keys(compressedAccessPoints).forEach((key) => {
-    compressedAccessPoints[key]._value /= AP_counts[key];
-  });
-
-  dataCo2.forEach((point) => {
-    if (!compressedDataCo2[point.location_n]) {
-      compressedDataCo2[point.location_n] = { location: point.location, _value: point._value };
-      CO2_counts[point.location_n] = 1;
-    } else {
-      compressedDataCo2[point.location_n]._value += point._value;
-      CO2_counts[point.location_n] += 1;
-    }
-  });
-
-  Object.keys(compressedDataCo2).forEach((key) => {
-    compressedDataCo2[key]._value /= CO2_counts[key];
-  });
-
-  const greekDays = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
-  const currentGreekDay = greekDays[new Date().getDay()];
-  const currentHour = new Date().getHours();
-
-  const targetDateStart = dataCo2[0]._start;
-  const targetDateStop = dataCo2[0]._stop;
-  const targetDateStartObj = new Date(targetDateStart);
-  const targetDateStopObj = new Date(targetDateStop);
-  const targetDateStartGreekDay = greekDays[targetDateStartObj.getDay()];
-  const targetDateStopGreekDay = greekDays[targetDateStopObj.getDay()];
-  const targetDateStartHour = targetDateStartObj.getHours();
-  const targetDateStopHour = targetDateStopObj.getHours();
-
-  const fileNames = [
-    "Arxaiologiko_mouseio", "Caravel_2", "Caravel", "Coffee_Island", "ELTA", "Faros", "Foititiki_Estia",
-    "Habit_cafe", "Jumbo", "Katastima_keramikon", "Molos_cafe", "NN_double_shot", "OMNIA_downtown",
-    "Parko_Eirinis", "Prytaneia", "Public", "Sinalio", "Sklavenitis_1", "Sklavenitis_2", "Tofalos",
-    "Top_form_gym", "Vivliothiki_Panepistimiou", "Voi_Noi", "Xoriatiko", "ZARA"
-  ];
-
-  // Create an array of fetch promises
-  const fetchPromises = Object.keys(compressedDataCo2).map(async (key) => {
-    const name = key;
-    const point = compressedDataCo2[key];
-    const value = (point._value - 400) / 2;
     const lat = parseFloat(point.location.split(",")[0]);
     const lng = parseFloat(point.location.split(",")[1]);
-
-    if (!fileNames.includes(name)) {
-      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: value | 0 });
-    } else {
-      try {
-        const response = await fetch(`../curves/${name}.json`);
-        if (!response.ok) throw new Error(`Failed to fetch ${name}`);
-        const data = await response.json();
-
-        if (!data[currentGreekDay] || !data[targetDateStartGreekDay] || !data[targetDateStopGreekDay]) {
-          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: value | 0 });
-        } else {
-          const currentLevel = data[currentGreekDay][currentHour];
-          const targetLevelStart = data[targetDateStartGreekDay][targetDateStartHour];
-          const targetLevelStop = data[targetDateStopGreekDay][targetDateStopHour];
-          const targetLevel = (targetLevelStart + targetLevelStop) / 2;
-
-          let multiplier = targetLevel / (currentLevel + 1);
-          multiplier = Math.min(multiplier, 10);
-          const target_value = multiplier * value;
-          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: target_value | 0 });
-        }
-      } catch (error) {
-        console.error(`Error fetching ${name}:`, error);
-        heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: value | 0 });
-      }
-    }
+    const heatmapPoint = {location: new google.maps.LatLng(lat, lng), weight: point._value};
+    // console.log(point);
+    heatmapData.push(heatmapPoint);
+    
   });
 
-  // Wait for all fetch requests to finish
-  await Promise.all(fetchPromises);
-
-  // Process Access Points
-  Object.keys(compressedAccessPoints).forEach((key) => {
-    const point = compressedAccessPoints[key];
-    const lat = parseFloat(point.location.split(",")[0]);
-    const lng = parseFloat(point.location.split(",")[1]);
-    const value = point._value;
-    heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: value });
-  });
-
-  // console.log("Final Heatmap Data:", heatmapData);
+  // console.log(heatmapData.length);
   return heatmapData;
 }
 
@@ -451,6 +358,7 @@ function toggleAirQualityAll() {
   
   window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
 }
+
 
 // Show the air quality information based on his selected route
 async function toggleAirQualityTrip() {
@@ -808,25 +716,25 @@ async function initMap() {
       
     //// Initialize the heatmaps (AP and AQ)
     // Create a heatmap for the access points
-    const heatMapDataAP = await getHeatmapData();
+    const heatMapDataAP = getHeatmapData();
     heatmapAP = new google.maps.visualization.HeatmapLayer({
       data: heatMapDataAP, 
       map: map,
 
     });
-    // heatMapDataAP.forEach((element) => {
-    //   const marker = new AdvancedMarkerElement({
-    //     position: element.location,
-    //     map: map,
-    //     title: "Access Point",
-    //     content: new PinElement({
-    //       glyph: "📶",
-    //       scale: 1.5,
-    //     }).element,
-    //     gmpDraggable: false,
-    //   });
-    //   markersAP.push(marker);
-    // });
+    heatMapDataAP.forEach((element) => {
+      const marker = new AdvancedMarkerElement({
+        position: element.location,
+        map: map,
+        title: "Access Point",
+        content: new PinElement({
+          glyph: "📶",
+          scale: 1.5,
+        }).element,
+        gmpDraggable: false,
+      });
+      markersAP.push(marker);
+    });
 
     const heatMapDataAQ = getAirQualityDataAll(metric);
     // Create a heatmap for the air quality sensors
@@ -834,19 +742,19 @@ async function initMap() {
       data: heatMapDataAQ,
       map: map,
     });
-    // heatMapDataAQ.forEach((element) => {
-    //   const marker = new AdvancedMarkerElement({
-    //     position: element.location,
-    //     map: map,
-    //     title: "Air Quality Sensor",
-    //     content: new PinElement({
-    //       glyph: "🔍",
-    //       scale: 1.5,
-    //     }).element,
-    //     gmpDraggable: false,
-    //   });
-    //   markersAQ.push(marker);
-    // });
+    heatMapDataAQ.forEach((element) => {
+      const marker = new AdvancedMarkerElement({
+        position: element.location,
+        map: map,
+        title: "Air Quality Sensor",
+        content: new PinElement({
+          glyph: "🔍",
+          scale: 1.5,
+        }).element,
+        gmpDraggable: false,
+      });
+      markersAQ.push(marker);
+    });
 
     // If the URL does not contain an event parameter, hide both heatmaps
     if (!event) {
