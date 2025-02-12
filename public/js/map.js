@@ -495,12 +495,20 @@ function getAverageMetricLevels() {
   return { co2: averageCo2, humidity: averageHumidity, temperature: averageTemperature };
 }
 
+async function getTop3AP() {
+  const data = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2);
+  const sortedData = data.sort((a, b) => b.weight - a.weight);
+  return sortedData.slice(0, 3);
+}
+
 // Show the air quality information based on his selected route
 async function toggleInfoTrip() {
   try {
+    const averageLevels = getAverageMetricLevels();
+    const top3AP = await getTop3AP();
     if (userRole === "citizen") {
       //Append the container to the map if it doesn't exist
-      const averageLevels = getAverageMetricLevels();
+      
       if (!document.querySelector(".air-quality-container")) {
         console.log("appending airQualityContainer");
 
@@ -513,6 +521,9 @@ async function toggleInfoTrip() {
             <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
             <a>Average Humidity: ${averageLevels.humidity} %</a>
             <a>Average Temperature: ${averageLevels.temperature} °C</a>
+            <a>Most Crowded Location: ${top3AP[0].weight} </a>
+            <a>Second Crowded Location: ${top3AP[1].weight} </a>
+            <a>Third Crowded Location: ${top3AP[2].weight} </a>
           </div>
           `;
         }
@@ -566,7 +577,31 @@ async function toggleInfoTrip() {
         document.querySelector(".air-quality-container").remove();
       }
     } else if (userRole === "business") {
-      console.log("Business role detected");
+      if (!document.querySelector(".air-quality-container")) {
+      const airQualityContainer = document.createElement("div");
+      airQualityContainer.classList.add("air-quality-container");
+        if (!currentDirections) {
+          console.log("No directions found (KEEP YOURSELF SAFE)");
+          airQualityContainer.innerHTML = `
+          <div class="dropdown-content">
+            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
+            <a>Average Humidity: ${averageLevels.humidity} %</a>
+            <a>Average Temperature: ${averageLevels.temperature} °C</a>
+          </div>
+          `;
+        }
+        var generalButtonContainer = document.getElementById(
+          "generalButtonContainer"
+        );
+
+
+
+        
+        generalButtonContainer.appendChild(airQualityContainer);
+      } else {
+        console.log("removing airQualityContainer");
+        document.querySelector(".air-quality-container").remove();
+      }
     } else if (userRole === "admin") {
       console.log("Admin role detected");
     } else {
@@ -935,8 +970,8 @@ async function initMap() {
       
     //// Initialize the heatmaps (AP and AQ)
     // Intermediate Dates based on selected time range
-    const startObj = new Date(selectedStart);
-    const stopObj = new Date(selectedStop);
+    const startObj = new Date(start);
+    const stopObj = new Date(stop);
     const intermediateDates = generateIntermediateDates(startObj, stopObj);
     // Create a heatmap for the access points
     let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2);
