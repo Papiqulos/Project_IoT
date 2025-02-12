@@ -30,10 +30,21 @@ export async function home(req, res, next) {
                     const stop = event.split("|")[2];
                     // console.log("Start: ", start);
                     // console.log("Stop: ", stop);
-                    influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(start, stop);
+                    const startn = new Date(new Date().getTime() + (-60) * 60 * 1000);
+                    const stopn = new Date(startn.getTime() + 60 * 60 * 1000);
+                    // console.log("Startn: ", startn);
+                    // console.log("Stopn: ", stopn);
+                    influxDataAccessPointsAll =  await model.getInfluxDataAccessPointsAll(start, stop);
                     influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(start, stop);
-                }
-                else {
+                    if (influxDataAirQualityAll.co2.length === 0){
+                        console.log("adeioAQ");
+                        influxDataAirQualityAll = await model.getInfluxDataAirQualityAll(startn.toISOString(), stopn.toISOString());
+                    }
+                    if (influxDataAccessPointsAll.length === 0){
+                        console.log("adeioAP");
+                        influxDataAccessPointsAll = await model.getInfluxDataAccessPointsAll(startn.toISOString(), stopn.toISOString());
+                    }
+                }else {
                     // const influxDataAirQualityELTA = await model.getInfluxDataAirQuality();
                     // console.log("Influx Data Air Quality: ", influxDataAirQualityELTA[600]);
 

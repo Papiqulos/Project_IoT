@@ -743,7 +743,6 @@ input[type="time"]:focus {
   align-items: center;
   background: white;
   border-radius: 28px;
-  padding: 10px;
 }
 
 .heatmap_controls .btn{
@@ -842,8 +841,6 @@ input:checked + .slider-toggle:before {
 .slider-toggle.round:before {
   border-radius: 50%;
 }
-
-
 
 /* LOGIN/REGISTER Forms */
 .form-container{

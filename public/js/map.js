@@ -30,6 +30,7 @@ const userRoleElemenent = document.getElementById("user-role");
 const userRole = userRoleElemenent.getAttribute("data-value");
 console.log("user role: ", userRole); // Outputs the Handlebars variable
 let influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
+console.log("influxData", influxData);
 
 // HELPER FUNCTIONS - NOT ALL USED 
 function componentToHex(c) {
@@ -130,7 +131,7 @@ async function getCoordsFromPlaceName(placeName) {
 function normalizeValue(value, type){
   if(type == "co2"){
     // console.log("co2", value);
-    return value/3 | 0;
+    return value | 0;
   }
   else if(type == "AP"){
     // console.log("AP", value);
@@ -480,52 +481,85 @@ function toggleAirQualityAll() {
   window.location.href = `/home?event=AirQualityButtonClicked|${selectedStart}|${selectedStop}|${selectedMetric}`;
 }
 
+function getAverageMetricLevels() {
+  // Get the average air quality data for the selected time range and all the metrics
+  const dataCo2 = influxData.airQuality.co2;
+  const dataHumidity = influxData.airQuality.humidity;
+  const dataTemperature = influxData.airQuality.temperature;
+
+  // Get the average values for each metric
+  const averageCo2 = Math.round(dataCo2.reduce((acc, element) => acc + element._value, 0) / dataCo2.length);
+  const averageHumidity = Math.round(dataHumidity.reduce((acc, element) => acc + element._value, 0) / dataHumidity.length);
+  const averageTemperature = Math.round(dataTemperature.reduce((acc, element) => acc + element._value, 0) / dataTemperature.length);
+
+  return { co2: averageCo2, humidity: averageHumidity, temperature: averageTemperature };
+}
+
 // Show the air quality information based on his selected route
 async function toggleInfoTrip() {
   try {
     if (userRole === "citizen") {
       //Append the container to the map if it doesn't exist
+      const averageLevels = getAverageMetricLevels();
       if (!document.querySelector(".air-quality-container")) {
-        if (!currentDirections) {
-          console.log("No directions found (KEEP YOURSELF SAFE)");
-          return;
-        }
         console.log("appending airQualityContainer");
 
         const airQualityContainer = document.createElement("div");
         airQualityContainer.classList.add("air-quality-container");
+        if (!currentDirections) {
+          console.log("No directions found (KEEP YOURSELF SAFE)");
+          airQualityContainer.innerHTML = `
+          <div class="dropdown-content">
+            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
+            <a>Average Humidity: ${averageLevels.humidity} %</a>
+            <a>Average Temperature: ${averageLevels.temperature} °C</a>
+          </div>
+          `;
+        }
+        else{
+          let totalAqi = 0;
+          let totalAqiCategory = [];
+  
+          currentTotalAirQualityTrip.forEach((element, index) => {
+            totalAqi += element.aqi;
+            totalAqiCategory.push(element.aqiCategory);
+          });
+  
+          const averageAqi = totalAqi / currentTotalAirQualityTrip.length;
+          const categoryCount = totalAqiCategory.reduce((acc, category) => {
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+          }, {});
+  
+          const mostOccurringCategory = Object.keys(categoryCount).reduce(
+            (a, b) => (categoryCount[a] > categoryCount[b] ? a : b)
+          );
+  
+          
+  
+  
+          airQualityContainer.innerHTML = `
+          <div class="dropdown-content">
+            <a>Average AQI: ${averageAqi.toFixed(2)}</a>
+            <a>Average Air Quality: ${mostOccurringCategory}</a>
+            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
+            <a>Average Humidity: ${averageLevels.humidity} %</a>
+            <a>Average Temperature: ${averageLevels.temperature} °C</a>
+          </div>
+          `;
+        }
+        
 
         // Get the average air quality and its category for the selected route
-        let totalAqi = 0;
-        let totalAqiCategory = [];
-
-        currentTotalAirQualityTrip.forEach((element, index) => {
-          totalAqi += element.aqi;
-          totalAqiCategory.push(element.aqiCategory);
-        });
-
-        const averageAqi = totalAqi / currentTotalAirQualityTrip.length;
-        const categoryCount = totalAqiCategory.reduce((acc, category) => {
-          acc[category] = (acc[category] || 0) + 1;
-          return acc;
-        }, {});
-
-        const mostOccurringCategory = Object.keys(categoryCount).reduce(
-          (a, b) => (categoryCount[a] > categoryCount[b] ? a : b)
-        );
-
-
-
-        airQualityContainer.innerHTML = `
-        <div class="dropdown-content">
-          <a>Average AQI: ${averageAqi.toFixed(2)}</a>
-          <a>Average Air Quality: ${mostOccurringCategory}</a>
-        </div>
-        `;
+        
 
         var generalButtonContainer = document.getElementById(
           "generalButtonContainer"
         );
+
+
+
+        
         generalButtonContainer.appendChild(airQualityContainer);
       } else {
         console.log("removing airQualityContainer");
