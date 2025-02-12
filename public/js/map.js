@@ -140,7 +140,8 @@ function normalizeValue(value, type){
 }
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
-async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2) {
+async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2,
+                              startTime = selectedStart, stopTime = selectedStop) {
   // const accesPoints = influxData.accessPoints;
   // const dataCo2 = influxData.airQuality.co2;
   const compressedAccessPoints = {};
@@ -181,12 +182,34 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     compressedDataCo2[key]._value /= CO2_counts[key];
   });
 
+  const currentDate = new Date();
+  if(currentDate>new Date(stopTime)){
+    Object.keys(compressedDataCo2).forEach((key) => {
+      const point = compressedDataCo2[key];
+      const value = (point._value - 400) / 2;
+      const lat = parseFloat(point.location.split(",")[0]);
+      const lng = parseFloat(point.location.split(",")[1]);
+
+      const actual_value = normalizeValue(value, "co2");
+      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value , location_n: key});
+    });
+    Object.keys(compressedAccessPoints).forEach((key) => {
+      const point = compressedAccessPoints[key];
+      const lat = parseFloat(point.location.split(",")[0]);
+      const lng = parseFloat(point.location.split(",")[1]);
+      const value = point._value;
+      const actual_value = normalizeValue(value, "AP");
+      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
+    });
+    return heatmapData;
+  }
+  console.log("Welcome to the future");
   const greekDays = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
   const currentGreekDay = greekDays[new Date().getDay()];
   const currentHour = new Date().getHours();
 
-  const targetDateStart = dataCo2[0]._start;
-  const targetDateStop = dataCo2[0]._stop;
+  const targetDateStart = startTime;
+  const targetDateStop = stopTime;
   const targetDateStartObj = new Date(targetDateStart);
   const targetDateStopObj = new Date(targetDateStop);
   const targetDateStartGreekDay = greekDays[targetDateStartObj.getDay()];
@@ -211,7 +234,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
 
     if (!fileNames.includes(name)) {
       const actual_value = normalizeValue(value, "co2");
-      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
+      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
     } else {
       try {
         const response = await fetch(`../curves/${name}.json`);
@@ -220,7 +243,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
 
         if (!data[currentGreekDay] || !data[targetDateStartGreekDay] || !data[targetDateStopGreekDay]) {
           const actual_value = normalizeValue(value, "co2");
-          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
+          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
         } else {
           const currentLevel = data[currentGreekDay][currentHour];
           const targetLevelStart = data[targetDateStartGreekDay][targetDateStartHour];
@@ -228,15 +251,15 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
           const targetLevel = (targetLevelStart + targetLevelStop) / 2;
 
           let multiplier = targetLevel / (currentLevel + 1);
-          multiplier = Math.min(multiplier, 10);
+          multiplier = Math.min(multiplier, 3);
           const target_value = multiplier * value;
           const actual_value = normalizeValue(target_value, "co2");
-          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
+          heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
         }
       } catch (error) {
         console.error(`Error fetching ${name}:`, error);
         const actual_value = normalizeValue(value, "co2");
-        heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
+        heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
       }
     }
   });
@@ -251,7 +274,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     const lng = parseFloat(point.location.split(",")[1]);
     const value = point._value;
     const actual_value = normalizeValue(value, "AP");
-    heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
+    heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
   });
 
   // console.log("Final Heatmap Data:", heatmapData);
@@ -388,7 +411,7 @@ function getAirQualityDataAll(metric = "co2", airQualityDataI = influxData.airQu
 
   // Get the type of air quality data to display
   let data = [];
-  console.log("using metric", metric);
+  // console.log("using metric", metric);
   // Get the air quality data for the selected metric
   switch (metric) {
     case "co2":
@@ -521,9 +544,10 @@ async function toggleInfoTrip() {
             <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
             <a>Average Humidity: ${averageLevels.humidity} %</a>
             <a>Average Temperature: ${averageLevels.temperature} °C</a>
-            <a>Most Crowded Location: ${top3AP[0].weight} </a>
-            <a>Second Crowded Location: ${top3AP[1].weight} </a>
-            <a>Third Crowded Location: ${top3AP[2].weight} </a>
+            <a>Top 3 Crowded Locations</a>
+            <a>${top3AP[0].location_n}: ${top3AP[0].weight} </a>
+            <a>${top3AP[1].location_n}: ${top3AP[1].weight} </a>
+            <a>${top3AP[2].location_n}: ${top3AP[2].weight} </a>
           </div>
           `;
         }
@@ -556,6 +580,10 @@ async function toggleInfoTrip() {
             <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
             <a>Average Humidity: ${averageLevels.humidity} %</a>
             <a>Average Temperature: ${averageLevels.temperature} °C</a>
+            <a>Top 3 Crowded Locations</a>
+            <a>${top3AP[0].location_n}: ${top3AP[0].weight} </a>
+            <a>${top3AP[1].location_n}: ${top3AP[1].weight} </a>
+            <a>${top3AP[2].location_n}: ${top3AP[2].weight} </a>
           </div>
           `;
         }
@@ -587,6 +615,10 @@ async function toggleInfoTrip() {
             <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
             <a>Average Humidity: ${averageLevels.humidity} %</a>
             <a>Average Temperature: ${averageLevels.temperature} °C</a>
+            <a>Top 3 Crowded Locations</a>
+            <a>${top3AP[0].location_n}: ${top3AP[0].weight}</a>
+            <a>${top3AP[1].location_n}: ${top3AP[1].weight}</a>
+            <a>${top3AP[2].location_n}: ${top3AP[2].weight}</a>
           </div>
           `;
         }
@@ -974,7 +1006,7 @@ async function initMap() {
     const stopObj = new Date(stop);
     const intermediateDates = generateIntermediateDates(startObj, stopObj);
     // Create a heatmap for the access points
-    let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2);
+    let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2, start, stop);
     heatMapDataAP = new google.maps.MVCArray(heatMapDataAP);
     heatmapAP = new google.maps.visualization.HeatmapLayer({
       data: heatMapDataAP, 
@@ -1124,16 +1156,32 @@ async function initMap() {
       const intermediateDate = intermediateDates[slider.value-1];
       
       // Filter the AP data for the intermediate date
-      const newDataAP = getOneTimeInstance(influxData.accessPoints, intermediateDate);
-      const newDataCo2 = getOneTimeInstance(influxData.airQuality.co2, intermediateDate);
+      const currentDate = new Date();
+      const stopDate = new Date(stop);
+      const startDate = new Date(start);
+      if (currentDate > stopDate) {
+        console.log("currentDate is greater than stopDate");
+
+        const newDataAP = getOneTimeInstance(influxData.accessPoints, intermediateDate);
+        const newDataCo2 = getOneTimeInstance(influxData.airQuality.co2, intermediateDate);
+        
+        // Convert the data to the heatmap format
+        const newHeatMapDataAP = await getHeatmapData(newDataAP, newDataCo2, start, stop);
+        // console.log("HeatMapDataAP", heatMapDataAP);
+        heatMapDataAP.clear();
+        newHeatMapDataAP.forEach((element) => {
+          heatMapDataAP.push(element);
+        });
+      }
+      else{
+        const intermediateDateStart = new Date(intermediateDate - 1000*60*60);
+        const newHeatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2, intermediateDateStart, intermediateDate);
+        heatMapDataAP.clear();
+        newHeatMapDataAP.forEach((element) => {
+          heatMapDataAP.push(element);
+        });
+      }
       
-      // Convert the data to the heatmap format
-      const newHeatMapDataAP = await getHeatmapData(newDataAP, newDataCo2);
-      // console.log("HeatMapDataAP", heatMapDataAP);
-      heatMapDataAP.clear();
-      newHeatMapDataAP.forEach((element) => {
-        heatMapDataAP.push(element);
-      });
       
 
       // Filter the AQ data for the intermediate date
@@ -1149,7 +1197,7 @@ async function initMap() {
            newDataAQ = getOneTimeInstance(influxData.airQuality.temperature, intermediateDate);
           break;
         default:
-          console.log("default");
+          // console.log("default");
           newDataAQ = getOneTimeInstance(influxData.airQuality.co2, intermediateDate);
           
     };

@@ -423,6 +423,8 @@ a {
 #top-left-controls{
   display: flex;
   flex-direction: column;
+  width: fit-content;
+  height: fit-content;
 }
 
 .search-controls{
@@ -502,14 +504,15 @@ a {
 
 /* BOTTOM RIGHT CONTROLS */
 .times-container {
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 15px;
+  /* padding: 15px; */
   /* gap: 10px; */
   background: white;
-  border-radius: 12px;
+  border-radius: 28px;
   box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
   /* margin: 10px; */
 }
@@ -613,7 +616,7 @@ input[type="time"]:focus {
 
 .slidecontainer {
   padding: 20px 10px 10px 10px;
-  width: 100%; /* Width of the outside container */
+  width: 70%; /* Width of the outside container */
 }
 
 /* The slider itself */
@@ -712,18 +715,20 @@ input[type="time"]:focus {
 
 /* TOP RIGHT CONTROLS */
 
-/* #top-right-controls{
-  display: flex;
+#top-right-controls{
+  /* display: flex;
   flex-direction: column;
-  height: fit-content;
-} */
+  height: fit-content; */
+  width: fit-content;
+  /* height: 100%; */
+}
 
 .general-button-container{
-  width: 100%;
+  /* width: 100%; */
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   background: #f6f6f6;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
@@ -743,6 +748,7 @@ input[type="time"]:focus {
   align-items: center;
   background: white;
   border-radius: 28px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
 }
 
 .heatmap_controls .btn{
@@ -757,6 +763,7 @@ input[type="time"]:focus {
   align-items: center;
   background: white;
   border-radius: 28px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
 }
 
 .air-quality-container{
@@ -765,6 +772,8 @@ input[type="time"]:focus {
   justify-content: center;
   align-items: center;
   margin: 10px;
+  width: 70%;
+  height: max-content;
 }
 
 .dropdown-content {
@@ -776,7 +785,9 @@ input[type="time"]:focus {
   background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
   width: 100%;
   height: 100%;
-  font-size: 18px;
+  font-size: 12px;
+  /* padding: 10px; */
+  
 }
 
 .switch {
