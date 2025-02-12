@@ -6,6 +6,10 @@
           {{!-- <button id="change-gradient" class="btn">Change Gradient</button>
           <button id="change-opacity" class="btn">Change Opacity</button>
           <button id="change-radius" class="btn">Change Radius</button> --}}
+          <label class="switch">
+            <input id="ap-switch" type="checkbox">
+            <span class="slider-toggle"></span>
+          </label>
         </div>
         <div class="air_quality_controls">
           <button id="air_quality_button" class="btn">Air Quality</button>
@@ -45,8 +49,14 @@
               <img src="/images/temperature.svg" alt="transit" />
             </label>
 
+            
           </div>
+          <label class="switch">
+              <input id="aq-switch" type="checkbox">
+              <span class="slider-toggle"></span>
+            </label>
         </div>
+        
         {{> bottom_right_controls}}
         <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
         <button id="infoButton" class="btn">✉️</button>

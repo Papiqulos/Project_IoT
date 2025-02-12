@@ -127,6 +127,16 @@ async function getCoordsFromPlaceName(placeName) {
   });
 }
 
+function normalizeValue(value, type){
+  if(type == "co2"){
+    // console.log("co2", value);
+    return value/3 | 0;
+  }
+  else if(type == "AP"){
+    // console.log("AP", value);
+    return value;
+  }
+}
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
 async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2) {
@@ -199,7 +209,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     const lng = parseFloat(point.location.split(",")[1]);
 
     if (!fileNames.includes(name)) {
-      const actual_value = Math.min(maxNumber, value);
+      const actual_value = normalizeValue(value, "co2");
       heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
     } else {
       try {
@@ -208,7 +218,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
         const data = await response.json();
 
         if (!data[currentGreekDay] || !data[targetDateStartGreekDay] || !data[targetDateStopGreekDay]) {
-          const actual_value = Math.min(maxNumber, value);
+          const actual_value = normalizeValue(value, "co2");
           heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
         } else {
           const currentLevel = data[currentGreekDay][currentHour];
@@ -219,12 +229,12 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
           let multiplier = targetLevel / (currentLevel + 1);
           multiplier = Math.min(multiplier, 10);
           const target_value = multiplier * value;
-          const actual_value = Math.min(maxNumber, target_value);
+          const actual_value = normalizeValue(target_value, "co2");
           heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
         }
       } catch (error) {
         console.error(`Error fetching ${name}:`, error);
-        const actual_value = Math.min(maxNumber, value);
+        const actual_value = normalizeValue(value, "co2");
         heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
       }
     }
@@ -239,7 +249,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     const lat = parseFloat(point.location.split(",")[0]);
     const lng = parseFloat(point.location.split(",")[1]);
     const value = point._value;
-    const actual_value = Math.min(maxNumber, value);
+    const actual_value = normalizeValue(value, "AP");
     heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value });
   });
 
@@ -251,8 +261,8 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
 function toggleHeatmap() {
   if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
     // Default values
-    selectedStart = "2025-02-11T15:36:00.000Z";
-    selectedStop = "2025-02-11T16:42:00.000Z";
+    selectedStart = "2025-02-10T15:36:00.000Z";
+    selectedStop = "2025-02-10T16:42:00.000Z";
   }
   else{
     // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
@@ -471,7 +481,7 @@ function toggleAirQualityAll() {
 }
 
 // Show the air quality information based on his selected route
-async function toggleAirQualityTrip() {
+async function toggleInfoTrip() {
   try {
     if (userRole === "citizen") {
       //Append the container to the map if it doesn't exist
@@ -503,6 +513,8 @@ async function toggleAirQualityTrip() {
         const mostOccurringCategory = Object.keys(categoryCount).reduce(
           (a, b) => (categoryCount[a] > categoryCount[b] ? a : b)
         );
+
+
 
         airQualityContainer.innerHTML = `
         <div class="dropdown-content">
@@ -630,6 +642,7 @@ async function textSearchPlace(text, results = 15) {
 // DIRECTONS
 // Get directions and intermediate markers from an origin to a destination with a specific travel mode
 async function getDirections(origin, destination, travelMode = "DRIVING", departureTime = new Date(), arrivalTime = new Date() + 1) {
+  
   // Clear any existing directions
   clearDirections();
   // Clear any existing markers
@@ -666,6 +679,7 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
 
       try {
         const steps = result.routes[0].legs[0].steps;
+        let heat = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2);
         if (steps) {
           // Clear the previous air quality data
           currentTotalAirQualityTrip = [];
@@ -718,7 +732,47 @@ async function getDirections(origin, destination, travelMode = "DRIVING", depart
             });
             // Store the marker for later removal
             window.markers.push(markerView);
-          });
+
+            // Get Crowd Density information for the trip
+            path.forEach(async (point) => {
+              // For every point in the path find if an access point exits within a radius of 200m
+              point = {lat: point.lat(), lng: point.lng()};
+              heat.forEach(async (accessPoint) => {
+                let gAccessPoint = {lat: accessPoint.location.lat(), lng: accessPoint.location.lng()};
+                // console.log("accessPoint", accessPointLat, accessPointLng);
+                // console.log("point", point.lat, point.lng);
+                
+                const dist = google.maps.geometry.spherical.computeDistanceBetween(point, gAccessPoint);
+                // console.log("dist", dist);
+                if (dist < 30) {
+                  console.log(gAccessPoint);
+                  // Add a marker for path points that are close to access points
+                  if(accessPoint.weight > 40){
+                    const pin = new PinElement({
+                      glyph: "📡",
+                      scale: 0.9,
+                      background: "#FF0000",
+                    });
+                    const markerView = new AdvancedMarkerElement({
+                      position: point,
+                      map: map,
+                      title: `Estimated Crowd: ${Math.floor(accessPoint.weight)}`,
+                      content: pin.element,
+                      gmpClickable: true,
+                    });
+                    markerView.addListener("click", ({ docEvent, latLng }) => {
+                      infoWindow.close();
+                      infoWindow.setContent(markerView.title);
+                      infoWindow.open(markerView.map, markerView);
+                    });
+                    window.markers.push(markerView);
+                    console.log("Access Point found");
+                  }
+                }
+              });
+              
+            });
+        });
         } else {
           console.log("No steps found");
         }
@@ -774,6 +828,7 @@ async function initMap() {
   const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
     "marker"
   );
+  
 
   const defaultBounds = {
     north: default_center.lat + 0.1,
@@ -842,7 +897,7 @@ async function initMap() {
     // Relative information about the user's nearby places and their air quality
     document
       .getElementById("infoButton")
-      .addEventListener("click", toggleAirQualityTrip);
+      .addEventListener("click", toggleInfoTrip);
       
     //// Initialize the heatmaps (AP and AQ)
     // Intermediate Dates based on selected time range
@@ -878,6 +933,38 @@ async function initMap() {
       data: heatMapDataAQ,
       map: map,
     });
+
+    // Set the gradient for the Air Quality heatmap
+    const gradient = [
+      "rgba(0, 255, 255, 0)",
+      "rgba(0, 255, 255, 1)",
+      "rgba(0, 191, 255, 1)",
+      "rgba(0, 127, 255, 1)",
+      "rgba(0, 63, 255, 1)",
+      "rgba(0, 0, 255, 1)",
+      "rgba(0, 0, 223, 1)",
+      "rgba(0, 0, 191, 1)",
+      "rgba(0, 0, 159, 1)",
+      "rgba(0, 0, 127, 1)",
+      "rgba(63, 0, 91, 1)",
+      "rgba(127, 0, 63, 1)",
+      "rgba(191, 0, 31, 1)",
+      "rgba(255, 0, 0, 1)",
+    ];
+  
+    heatmapAQ.set("gradient", gradient);
+    // Listeners for the toggling of the heatmaps
+    var apSwitch = document.getElementById("ap-switch");
+    var aqSwitch = document.getElementById("aq-switch");
+
+    apSwitch.addEventListener("change", () => {
+      heatmapAP.setMap(apSwitch.checked ? map : null);
+    });
+
+    aqSwitch.addEventListener("change", () => {
+      heatmapAQ.setMap(aqSwitch.checked ? map : null);
+    });
+
     // heatMapDataAQ.forEach((element) => {
     //   const marker = new AdvancedMarkerElement({
     //     position: element.location,
@@ -907,6 +994,7 @@ async function initMap() {
       clearMarkersAQ();
       heatmapAQ.setMap(null);
       heatmapAP.setMap(map);
+      apSwitch.checked = true;
     }
 
     // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
@@ -915,6 +1003,7 @@ async function initMap() {
       clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(map);
+      aqSwitch.checked = true;
 
       
     }
@@ -1004,7 +1093,9 @@ async function initMap() {
     newHeatMapDataAQ.forEach((element) => {
       heatMapDataAQ.push(element);
     });
-  });
+    });
+
+    
 
   if (userRole === "citizen") {
     
