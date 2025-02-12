@@ -130,18 +130,16 @@ async function getCoordsFromPlaceName(placeName) {
 
 function normalizeValue(value, type){
   if(type == "co2"){
-    console.log("co2", value);
+    // console.log("co2", value);
     return value | 0;
   }
   else if(type == "AP"){
-    console.log("AP", value);
+    // console.log("AP", value);
     return value;
   }
 }
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
-async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2,
-                              startTime = selectedStart, stopTime = selectedStop) {
 async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2,
                               startTime = selectedStart, stopTime = selectedStop) {
   // const accesPoints = influxData.accessPoints;
@@ -206,28 +204,6 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     return heatmapData;
   }
   console.log("Welcome to the future");
-  const currentDate = new Date();
-  if(currentDate>new Date(stopTime)){
-    Object.keys(compressedDataCo2).forEach((key) => {
-      const point = compressedDataCo2[key];
-      const value = (point._value - 400) / 2;
-      const lat = parseFloat(point.location.split(",")[0]);
-      const lng = parseFloat(point.location.split(",")[1]);
-
-      const actual_value = normalizeValue(value, "co2");
-      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value , location_n: key});
-    });
-    Object.keys(compressedAccessPoints).forEach((key) => {
-      const point = compressedAccessPoints[key];
-      const lat = parseFloat(point.location.split(",")[0]);
-      const lng = parseFloat(point.location.split(",")[1]);
-      const value = point._value;
-      const actual_value = normalizeValue(value, "AP");
-      heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
-    });
-    return heatmapData;
-  }
-  console.log("Welcome to the future");
   const greekDays = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
   const currentGreekDay = greekDays[new Date().getDay()];
   const currentHour = new Date().getHours();
@@ -247,25 +223,6 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     "Parko_Eirinis", "Prytaneia", "Public", "Sinalio", "Sklavenitis_1", "Sklavenitis_2", "Tofalos",
     "Top_form_gym", "Vivliothiki_Panepistimiou", "Voi_Noi", "Xoriatiko", "ZARA"
   ];
-  const curveAP = [0.3, 0.2, 0.2, 0.2, 0.1, 0.1, 0.2, 0.3, 0.7, 0.7, 0.8, 0.8, 0.8, 0.8, 0.7, 0,7, 0.4, 0.5, 0.6, 0.7, 0.7, 0.6, 0.6, 0.3 ]
-
-  // Process Access Points
-  Object.keys(compressedAccessPoints).forEach((key) => {
-    const point = compressedAccessPoints[key];
-    const lat = parseFloat(point.location.split(",")[0]);
-    const lng = parseFloat(point.location.split(",")[1]);
-    
-
-    const current_mult = curveAP[currentHour];
-    const target_mult = curveAP[targetDateStartHour] + curveAP[targetDateStopHour];
-    const multiplier = target_mult / current_mult;
-    
-    const value = 2*point._value * multiplier;
-    const actual_value = normalizeValue(value, "AP");
-    heatmapData.push({ location: new google.maps.LatLng(lat, lng), weight: actual_value, location_n: key });
-  });
-  // console.log("TEST", accesPoints)
-
 
   // Create an array of fetch promises
   const fetchPromises = Object.keys(compressedDataCo2).map(async (key) => {
