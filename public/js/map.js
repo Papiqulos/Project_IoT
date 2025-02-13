@@ -139,6 +139,7 @@ function normalizeValue(value, type){
     return value;
   }
 }
+
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
 async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2,
@@ -1001,16 +1002,7 @@ async function initMap() {
     else{
       metric = "co2";
     }
-    // Listener for the "HEATMAPS" button
-    // Toggles the heatmap on the map
-    document
-    .getElementById("heatmaps_button")
-    .addEventListener("click", toggleHeatmap);
     
-    // Toggles the air quality information on the map
-    document
-      .getElementById("air_quality_button")
-      .addEventListener("click", toggleAirQualityAll);
 
     // Listener for the "✉️" button
     // Relative information about the user's nearby places and their air quality
@@ -1098,6 +1090,12 @@ async function initMap() {
     //   markersAQ.push(marker);
     // });
 
+    // Listeners for the start and stop date and time
+    var departureTimeElement = document.getElementById("departureTime");
+    var arrivalTimeElement = document.getElementById("arrivalTime");
+    var departureDateElement = document.getElementById("departureDate");
+    var arrivalDateElement = document.getElementById("arrivalDate");
+
     // If the URL does not contain an event parameter, hide both heatmaps
     if (!event) {
       console.log("url does not contain event");
@@ -1105,33 +1103,38 @@ async function initMap() {
       clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(null);
+      departureTimeElement.value = "15:36";
+      departureDateElement.value = "2025-02-10";
+      arrivalTimeElement.value = "16:42";
+      arrivalDateElement.value = "2025-02-10";
     }
+    else{
+      console.log("url contains event");
+      departureTimeElement.value = new Date(startObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+      departureDateElement.value = startObj.toISOString().slice(0, 10);
+      arrivalTimeElement.value = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+      arrivalDateElement.value = stopObj.toISOString().slice(0, 10);
+      // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
+      if (event === "HeatmapsButtonClicked") {
+        console.log("toggling AP and hiding AQ");
+        clearMarkersAQ();
+        heatmapAQ.setMap(null);
+        heatmapAP.setMap(map);
+        apSwitch.checked = true;
+      }
 
-    // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
-    if (event === "HeatmapsButtonClicked") {
-      console.log("toggling AP and hiding AQ");
-      clearMarkersAQ();
-      heatmapAQ.setMap(null);
-      heatmapAP.setMap(map);
-      apSwitch.checked = true;
+      // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
+      if (event === "AirQualityButtonClicked") {
+        console.log("toggling AQ and hiding AP");
+        clearMarkersAP();
+        heatmapAP.setMap(null);
+        heatmapAQ.setMap(map);
+        aqSwitch.checked = true;
+
+        
+      }
     }
-
-    // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
-    if (event === "AirQualityButtonClicked") {
-      console.log("toggling AQ and hiding AP");
-      clearMarkersAP();
-      heatmapAP.setMap(null);
-      heatmapAQ.setMap(map);
-      aqSwitch.checked = true;
-
-      
-    }
-
-    // Listeners for the start and stop date and time
-    var departureTimeElement = document.getElementById("departureTime");
-    var arrivalTimeElement = document.getElementById("arrivalTime");
-    var departureDateElement = document.getElementById("departureDate");
-    var arrivalDateElement = document.getElementById("arrivalDate");
+    
 
     // Listener for the departure time
     departureTimeElement
@@ -1366,6 +1369,16 @@ async function initMap() {
     
 
   } else if (userRole === "business") {
+    // Listener for the "HEATMAPS" button
+    // Toggles the heatmap on the map
+    document
+    .getElementById("heatmaps_button")
+    .addEventListener("click", toggleHeatmap);
+    
+    // Toggles the air quality information on the map
+    document
+      .getElementById("air_quality_button")
+      .addEventListener("click", toggleAirQualityAll);
     
     var monitoringButton = document.getElementById("monitoringButton");
     var analyticsButton = document.getElementById("analyticsButton");

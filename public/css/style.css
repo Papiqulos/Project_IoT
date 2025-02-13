@@ -621,7 +621,15 @@ input[type="time"]:focus {
 
 .slidecontainer {
   padding: 20px 10px 10px 10px;
+  /* margin: 10px; */
   width: 70%; /* Width of the outside container */
+}
+.current-time{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 /* The slider itself */
