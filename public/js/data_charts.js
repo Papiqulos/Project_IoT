@@ -5,25 +5,6 @@ const dataAQCo2 = influxData.airQuality.co2;
 console.log(dataAP);
 console.log(dataAQCo2);
 
-function getOneTimeInstance(data, desiredTime) {
-    // console.log(data)
-    const closestPerMeasurement = data.reduce((acc, entry) => {
-        const sensor = entry._measurement;
-        const entryTime = new Date(entry._time);
-        const diff = Math.abs(entryTime - desiredTime);
-  
-        // Keep only the closest timestamp per measurement
-        if (!acc[sensor] || diff < acc[sensor].diff) {
-            acc[sensor] = { ...entry, diff }; // Store closest entry
-        }
-  
-        return acc;
-    }, {});
-  
-    // Convert object back to an array
-    const result = Object.values(closestPerMeasurement).map(({ diff, ...rest }) => rest);
-    return result;
-}
 
 function groupSensorReadings(data) {
     return data.reduce((acc, obj) => {
@@ -36,11 +17,13 @@ function groupSensorReadings(data) {
     }, {});
 }
 
-const groupedReadings = groupSensorReadings(dataAP);
-console.log(groupedReadings);
+const groupedReadingsAP = groupSensorReadings(dataAP);
+const groupedReadingsAQCo2 = groupSensorReadings(dataAQCo2);
+console.log(groupedReadingsAP);
+
 
 // Function to create charts
-function createCharts(sensorData) {
+function createCharts(sensorData, flag) {
     
     const container = document.getElementById("chart");
 
@@ -51,8 +34,14 @@ function createCharts(sensorData) {
         container.appendChild(canvas);
 
         // Prepare data for Chart.js
-        const labels = readings.map(r => new Date(r._time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })); // Convert timestamp
-        const values = readings.map(r => r._value);
+        
+        const labels = readings.map(r => new Date(new Date(r._time).getTime() - 2*60*60*1000  ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })); // Convert timestamp
+        let values;
+        if (flag === "AP") {
+             values = readings.map(r => r._value);
+        } else if (flag === "AQCo2") {
+             values = readings.map(r => (r._value - 400) / 5);
+        }
 
         new Chart(canvas, {
             type: 'line',
@@ -84,7 +73,8 @@ function createCharts(sensorData) {
     });
 }
 
-createCharts(groupedReadings);
+createCharts(groupedReadingsAP, "AP");
+createCharts(groupedReadingsAQCo2, "AQCo2");
 
 
 // (async function() {

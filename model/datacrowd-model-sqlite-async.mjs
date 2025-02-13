@@ -436,20 +436,17 @@ export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15
 
 export let getInfluxDataOfBusiness = async function (businessId, start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
     try {
-        if (businessId == 13) {
-            const dataAP = await getInfluxDataAccessPointsAll(start, stop);
-            const dataAQ = await getInfluxDataAirQualityAll(start, stop);
-            return {airQuality: dataAQ, accessPoints: dataAP};
-        }
         const sources = await getBusinessSourcesFromBusinessId(businessId);
         const dataAP = [];
         const dataAQCo2 = [];
         const dataAQHumidity = [];
         const dataAQTemperature = [];
+        const airQualityData = await getInfluxDataAirQualityAll(start, stop);
+        const accessPointsData = await getInfluxDataAccessPointsAll(start, stop);
         for (const source of sources) {
             if (source.type == 'airquality') {
                 // Get all the air quality data for the time frame
-                const airQualityData = await getInfluxDataAirQualityAll(start, stop);
+                
                 const dataCo2 = airQualityData.co2;
                 const dataHumidity = airQualityData.humidity;
                 const dataTemperature = airQualityData.temperature
@@ -472,7 +469,7 @@ export let getInfluxDataOfBusiness = async function (businessId, start = "2025-0
                 
             } 
             else if (source.type == 'wifi') {
-                const accessPointsData = await getInfluxDataAccessPointsAll(start, stop);
+                
                 accessPointsData.forEach(element => {
                     if (element.source_id == source.source_id) {
                         dataAP.push(element);

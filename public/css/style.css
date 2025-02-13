@@ -369,11 +369,34 @@ a {
   z-index: 5000;
 }
 
+
+
+/* #grafanaContainer:first-child{
+  padding-top: 200px;
+} */
+
+.graph-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  width: 30%;
+  height: 100%;
+}
+
+.charts-title {
+  width: 100%; /* Ensures it stays within the container */
+  white-space: normal; /* Allows wrapping */
+  text-align: center; /* Centers the text */
+}
+
+
+
 /* GRAFANA CONTAINERS */
 #grafanaContainer{
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: start;
 
 
@@ -392,19 +415,6 @@ a {
   scrollbar-width: thin;
   scrollbar-color: #3c4fe0 transparent;
   
-}
-
-/* #grafanaContainer:first-child{
-  padding-top: 200px;
-} */
-
-.graph-container{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: start;
-  width: 30%;
-  height: 100%;
 }
 
 /* THE MAP */
