@@ -1,4 +1,4 @@
-# Public Hotspots
+# DataCrowd
 
 ## Overview
 DataCrowd is an IoT-based application designed to analyze and provide real-time insights into congestion at public locations such as bus stops, restaurants, and university areas. By leveraging sensor data and external APIs, the app helps commuters, business owners, and city authorities make data-driven decisions.
