@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="AVJDm6md6waOalohnpmS" name="Page-1">
-        <mxGraphModel dx="2310" dy="1298" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
+        <mxGraphModel dx="2810" dy="1948" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -226,10 +226,10 @@
                 <mxCell id="510" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;LNS&lt;br&gt;(ChirpStack)&lt;br&gt;[2]&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
                     <mxGeometry x="2310" y="735" width="170" height="170" as="geometry"/>
                 </mxCell>
-                <mxCell id="514" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Georgios Papoutsas&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;gradientDirection=west;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
+                <mxCell id="514" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Georgios Papoutsas&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;gradientDirection=west;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" parent="1" vertex="1">
                     <mxGeometry x="320" y="1200" width="240" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="515" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Konstantinos Tsampras&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;gradientDirection=west;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" vertex="1" parent="1">
+                <mxCell id="515" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Konstantinos Tsampras&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;gradientDirection=west;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" parent="1" vertex="1">
                     <mxGeometry x="325" y="1370" width="240" height="140" as="geometry"/>
                 </mxCell>
             </root>
