@@ -63,7 +63,7 @@ async function initMap() {
     const bSmarker = new AdvancedMarkerElement({
         position: { lat: lat, lng: lng },
         map: map,
-        title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br>`,
+        title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br><span>ID: ${source.source_id}</span><br>`,
         content: new PinElement({
             background: "#3C4FE0",
             borderColor: "#3C4FE0",
@@ -89,7 +89,7 @@ async function initMap() {
         const aSmarker = new AdvancedMarkerElement({
             position: { lat: lat, lng: lng },
             map: map,
-            title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br>`,
+            title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br><span>ID: ${source.source_id}</span><br>`,
             content: new PinElement({
                 background: "#e20000",
                 borderColor: "#e20000",

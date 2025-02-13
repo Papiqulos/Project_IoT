@@ -11,8 +11,8 @@ const url = process.env.INFLUXDB_URL;
 const token = process.env.INFLUX_TOKEN1;
 const org = process.env.INFLUXDB_ORG;
 const bucket = "datacrowd";
-let selectedStartGlobal = "2025-02-10T17:36:00.000Z";
-let selectedStopGlobal = "2025-02-10T18:42:00.000Z";
+let selectedStartGlobal = "2025-02-11T17:36:00.000Z";
+let selectedStopGlobal = "2025-02-11T18:42:00.000Z";
 
 let queryApi;
 // Connect to the InfluxDB

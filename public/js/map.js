@@ -12,8 +12,8 @@ let map,
   selectedDepartureDate,
   selectedArrivalDate,
   selectedMetric,
-  selectedStartGlobal = "2025-02-10T17:36:00.000Z",
-  selectedStopGlobal = "2025-02-10T18:42:00.000Z",
+  selectedStartGlobal = "2025-02-11T17:36:00.000Z",
+  selectedStopGlobal = "2025-02-11T18:42:00.000Z",
   markersAP = [],
   markersAQ = [];
   markersOvercrowded = [];
@@ -1007,11 +1007,15 @@ async function getOvercrowdedPlaces(heatMapDataAP) {
       const placeData = heatMapDataAP.find((place) => place.location_n === name);
 
       if (placeData && placeData.weight > normalLevel) {
+        let newRatio = placeData.weight / normalLevel;
+        if (normalLevel === 0) {
+          newRatio = 1;
+        };
         return { 
           name, 
           currentLevel: placeData.weight, 
           normalLevel, 
-          ratio: placeData.weight / normalLevel, // Calculate the overcrowding ratio
+          ratio:  newRatio, // Calculate the overcrowding ratio
           lat: placeData.location.lat(), 
           lng: placeData.location.lng() 
         };
