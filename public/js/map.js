@@ -240,7 +240,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
     "Parko_Eirinis", "Prytaneia", "Public", "Sinalio", "Sklavenitis_1", "sklavenitis_2", "Tofalos",
     "Top_form_gym", "Vivliothiki_Panepistimiou", "Voi_Noi", "Xoriatiko", "ZARA"
   ];
-  const curveAP = [0.3, 0.2, 0.2, 0.2, 0.1, 0.1, 0.2, 0.3, 0.7, 0.7, 0.8, 0.8, 0.8, 0.8, 0.7, 0,7, 0.4, 0.5, 0.6, 0.7, 0.7, 0.6, 0.6, 0.3 ]
+  const curveAP = [0.3, 0.2, 0.2, 0.2, 0.1, 0.1, 0.2, 0.3, 0.7, 0.7, 0.8, 0.8, 0.8, 0.8, 0.7, 0.7, 0.4, 0.5, 0.6, 0.7, 0.7, 0.6, 0.6, 0.3 ];
 
   // Process Access Points
   Object.keys(compressedAccessPoints).forEach((key) => {
@@ -1081,8 +1081,8 @@ async function initMap() {
     }
     // For the first time the page is loaded default to CO2
     else{
-      start = new Date(new Date().getTime() - 60 * 60 * 1000).toISOString();
-      stop = new Date().toISOString();
+      start = new Date(new Date().getTime() + 60 * 60 * 1000).toISOString();
+      stop = new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString();
       metric = "co2";
     }
     
@@ -1100,6 +1100,7 @@ async function initMap() {
     let intermediateDates;
     // Create a heatmap for the access points
     let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2, start, stop);
+    
     heatMapDataAP = new google.maps.MVCArray(heatMapDataAP);
     heatmapAP = new google.maps.visualization.HeatmapLayer({
       data: heatMapDataAP, 
@@ -1174,8 +1175,14 @@ async function initMap() {
 
     
     
+  var mapContainer = document.getElementById("map");
+  var grafanaContainer = document.getElementById("grafanaContainer");
+  var graphContainer = document.getElementById("graphContainer");
 
   if (userRole === "citizen") {
+    console.log("heatMapDataAP", heatMapDataAP);
+    graphContainer.remove();
+    grafanaContainer.remove();
     // heatmapAP.setMap(null);
     heatmapAQ.setMap(null);
 
@@ -1330,8 +1337,7 @@ async function initMap() {
     var departureDateElement = document.getElementById("departureDate");
     var arrivalDateElement = document.getElementById("arrivalDate");
 
-    var mapContainer = document.getElementById("map");
-    var grafanaContainer = document.getElementById("grafanaContainer");
+    
 
     // If the URL does not contain an event parameter, hide both heatmaps
     if (!event) {
@@ -1344,7 +1350,9 @@ async function initMap() {
       departureDateElement.value = selectedStart.split("T")[0];
       arrivalTimeElement.value = selectedStop.split("T")[1].slice(0, 5);
       arrivalDateElement.value = selectedStop.split("T")[0];
-      intermediateDates  = generateIntermediateDates(startObj, stopObj);
+      const correctedStartObj = new Date(startObj.getTime() - 2 * 60 * 60 * 1000);  
+      const correctedStopObj = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000);
+      intermediateDates  = generateIntermediateDates(correctedStartObj, correctedStopObj);
     }
     else{
       console.log("url contains event");
@@ -1451,6 +1459,7 @@ async function initMap() {
         
         // Convert the data to the heatmap format
         const newHeatMapDataAP = await getHeatmapData(newDataAP, newDataCo2, start, stop);
+        console.log(start, stop, intermediateDate);
         // console.log("HeatMapDataAP", heatMapDataAP);
         heatMapDataAP.clear();
         newHeatMapDataAP.forEach((element) => {
@@ -1529,7 +1538,7 @@ async function initMap() {
           // console.log("default");
           newDataAQ = getOneTimeInstance(influxData.airQuality.co2, intermediateDate);
           
-    };
+      };
     // console.log(newDataAQ);
     // Convert the data to the heatmap format
     const newHeatMapDataAQ = getAirQualityDataAll(metric, {co2: newDataAQ, 
@@ -1538,7 +1547,11 @@ async function initMap() {
     heatMapDataAQ.clear();
     newHeatMapDataAQ.forEach((element) => {
       heatMapDataAQ.push(element);
-    });
+      });
+
+
+
+
     });
     // Listener for the "HEATMAPS" button
     // Toggles the heatmap on the map
@@ -1599,12 +1612,13 @@ async function initMap() {
 
       // Show the map
       mapContainer.style.display = "block";
+      mapContainer.style.width = "70%";
 
       // Show the top right controls
       topRightControls.style.display = "block";
 
       // Hide the Grafana Dashboard
-      grafanaContainer.style.display = "none";
+      grafanaContainer.style.display = "flex";
 
     });
 
@@ -1735,24 +1749,25 @@ async function initMap() {
   
         // Show the map
         mapContainer.style.display = "block";
+        mapContainer.style.width = "70%";
   
         // Hide the Grafana Dashboard
         grafanaContainer.style.display = "none";
   
         // Hide the search bar
-        analyticsSearchBar.style.display = "none";
+        analyticsSearchBar.style.display = "flex";
       });
-      analyticsButton.addEventListener("click", async () => {
-        console.log("monitoringButton clicked")
-        // Hide the map
-        mapContainer.style.display = "none";
+      // analyticsButton.addEventListener("click", async () => {
+      //   console.log("monitoringButton clicked")
+      //   // Hide the map
+      //   mapContainer.style.display = "none";
   
-        // Show the Grafana Dashboard
-        grafanaContainer.style.display = "flex";
+      //   // Show the Grafana Dashboard
+      //   grafanaContainer.style.display = "flex";
   
-        // Show the search bar
-        analyticsSearchBar.style.display = "block";
-      });
+      //   // Show the search bar
+      //   analyticsSearchBar.style.display = "block";
+      // });
     console.log("Admin role detected");
   } else {
     console.log("No role detected KeepYourselfSafe");

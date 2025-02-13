@@ -94,6 +94,7 @@ export async function home(req, res, next) {
                         influxDataAirQualityAll = futureData.airQuality;
                         influxDataAccessPointsAll = futureData.accessPoints;
                     }
+                    // console.log("AQasfasf of business: ", influxDataAirQualityAll.co2);
                     console.log("AQ of business: ", influxDataAirQualityAll.co2.length);
                     console.log("AP of business ", influxDataAccessPointsAll.length);
 
@@ -103,7 +104,7 @@ export async function home(req, res, next) {
                     const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id);
                     influxDataAirQualityAll = influxDataOfBusiness.airQuality;
                     influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
-                    console.log("AQ of business: ", influxDataAirQualityAll.length);
+                    console.log("AQ of business: ", influxDataAirQualityAll.co2.length);
                     console.log("AP of business ", influxDataAccessPointsAll.length);
                 }   
             }
