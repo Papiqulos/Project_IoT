@@ -16,6 +16,8 @@ let map,
   selectedStop = "2025-02-10T16:42:00.000Z",
   markersAP = [],
   markersAQ = [];
+  markersOvercrowded = [];
+  overcrowdedPlaces = [];
 let currentTotalAirQualityTrip = [];
 let markers = [];
 const center_bald = { lat: 38.23666252117088, lng: 21.732572423403976 }; // euagellobill
@@ -235,7 +237,7 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
   const fileNames = [
     "Arxaiologiko_mouseio", "Caravel_2", "Caravel", "Coffee_Island", "ELTA", "Faros", "Foititiki_Estia",
     "Habit_cafe", "Jumbo", "Katastima_keramikon", "Molos_cafe", "NN_double_shot", "OMNIA_downtown",
-    "Parko_Eirinis", "Prytaneia", "Public", "Sinalio", "Sklavenitis_1", "Sklavenitis_2", "Tofalos",
+    "Parko_Eirinis", "Prytaneia", "Public", "Sinalio", "Sklavenitis_1", "sklavenitis_2", "Tofalos",
     "Top_form_gym", "Vivliothiki_Panepistimiou", "Voi_Noi", "Xoriatiko", "ZARA"
   ];
   const curveAP = [0.3, 0.2, 0.2, 0.2, 0.1, 0.1, 0.2, 0.3, 0.7, 0.7, 0.8, 0.8, 0.8, 0.8, 0.7, 0,7, 0.4, 0.5, 0.6, 0.7, 0.7, 0.6, 0.6, 0.3 ]
@@ -559,7 +561,6 @@ async function toggleInfoTrip() {
   }
   try {
     const averageLevels = getAverageMetricLevels();
-    const top3AP = await getTop3AP();
     if (userRole === "citizen") {
       //Append the container to the map if it doesn't exist
       
@@ -568,19 +569,24 @@ async function toggleInfoTrip() {
 
         const airQualityContainer = document.createElement("div");
         airQualityContainer.classList.add("air-quality-container");
+        const OC_places = window.overcrowdedPlaces;
+        // console.log("Oc_places", OC_places);
+        const numberOfOvercrowdedPlaces = Math.min(5, OC_places.length);
         if (!currentDirections) {
           console.log("No directions found (KEEP YOURSELF SAFE)");
-          airQualityContainer.innerHTML = `
+          temp_html = `
           <div class="dropdown-content">
-            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
-            <a>Average Humidity: ${averageLevels.humidity} %</a>
-            <a>Average Temperature: ${averageLevels.temperature} °C</a>
-            <a>Top 3 Crowded Locations</a>
-            <a>${top3AP[0].location_n}: ${top3AP[0].weight} </a>
-            <a>${top3AP[1].location_n}: ${top3AP[1].weight} </a>
-            <a>${top3AP[2].location_n}: ${top3AP[2].weight} </a>
-          </div>
-          `;
+            <a>Levels: CO2: ${averageLevels.co2} p/m, Humidity: ${averageLevels.humidity} %, Temperature: ${averageLevels.temperature} °C</a>
+            <br>
+            `
+            if(OC_places.length > 0){
+              temp_html += `<a>Overcrowded locations (Current/Normal):</a>`;
+            }
+            for (let i = 0; i < numberOfOvercrowdedPlaces; i++) {
+              temp_html += `<a>${OC_places[i].name}: ${OC_places[i].currentLevel}/${OC_places[i].normalLevel}</a>`;
+            }
+          temp_html +=`</div>`;
+          airQualityContainer.innerHTML = temp_html;
         }
         else{
           let totalAqi = 0;
@@ -602,21 +608,23 @@ async function toggleInfoTrip() {
           );
   
           
-  
-  
-          airQualityContainer.innerHTML = `
+          
+          
+          temp_html = `
           <div class="dropdown-content">
-            <a>Average AQI: ${averageAqi.toFixed(2)}</a>
-            <a>Average Air Quality: ${mostOccurringCategory}</a>
-            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
-            <a>Average Humidity: ${averageLevels.humidity} %</a>
-            <a>Average Temperature: ${averageLevels.temperature} °C</a>
-            <a>Top 3 Crowded Locations</a>
-            <a>${top3AP[0].location_n}: ${top3AP[0].weight} </a>
-            <a>${top3AP[1].location_n}: ${top3AP[1].weight} </a>
-            <a>${top3AP[2].location_n}: ${top3AP[2].weight} </a>
-          </div>
-          `;
+            <a>AQI: ${averageAqi.toFixed(2)}, Air Quality: ${mostOccurringCategory}</a>
+            <a>Levels: CO2: ${averageLevels.co2} p/m, Humidity: ${averageLevels.humidity} %, Temperature: ${averageLevels.temperature} °C</a>
+            <br>
+            `
+            if(OC_places.length > 0){
+              temp_html += `<a>Overcrowded locations (Current/Normal):</a>`;
+            }
+            for (let i = 0; i < numberOfOvercrowdedPlaces; i++) {
+              temp_html += `<a>${OC_places[i].name}: ${OC_places[i].currentLevel}/${OC_places[i].normalLevel}</a>`;
+            }
+            temp_html += `</div>`;
+          airQualityContainer.innerHTML = temp_html;
+          
         }
         
 
@@ -638,20 +646,24 @@ async function toggleInfoTrip() {
     } else if (userRole === "business") {
       if (!document.querySelector(".air-quality-container")) {
       const airQualityContainer = document.createElement("div");
+      const OC_places = window.overcrowdedPlaces;
+      const numberOfOvercrowdedPlaces = Math.min(5, OC_places.length);
       airQualityContainer.classList.add("air-quality-container");
         if (!currentDirections) {
           console.log("No directions found (KEEP YOURSELF SAFE)");
-          airQualityContainer.innerHTML = `
+          temp_html = `
           <div class="dropdown-content">
-            <a>Average Co2 Levels: ${averageLevels.co2} p/m</a>
-            <a>Average Humidity: ${averageLevels.humidity} %</a>
-            <a>Average Temperature: ${averageLevels.temperature} °C</a>
-            <a>Top 3 Crowded Locations</a>
-            <a>${top3AP[0].location_n}: ${top3AP[0].weight}</a>
-            <a>${top3AP[1].location_n}: ${top3AP[1].weight}</a>
-            <a>${top3AP[2].location_n}: ${top3AP[2].weight}</a>
-          </div>
-          `;
+            <a>Levels: CO2: ${averageLevels.co2} p/m, Humidity: ${averageLevels.humidity} %, Temperature: ${averageLevels.temperature} °C</a>
+            <br>
+            `
+            if(OC_places.length > 0){
+              temp_html += `<a>Overcrowded locations (Current/Normal):</a>`;
+            }
+            for (let i = 0; i < numberOfOvercrowdedPlaces; i++) {
+              temp_html += `<a>${OC_places[i].name}: ${OC_places[i].currentLevel}/${OC_places[i].normalLevel}</a>`;
+            }
+            temp_html +=`</div>`;
+            airQualityContainer.innerHTML = temp_html;
         }
         var generalButtonContainer = document.getElementById(
           "generalButtonContainer"
@@ -954,6 +966,62 @@ function clearDirections() {
   }
 }
 
+// Function to clear markers for overcrowding
+function clearMarkersOvercrowded() {
+  // Clear existing markers if any
+  if (window.markersOvercrowded) {
+    window.markersOvercrowded.forEach((marker) => marker.setMap(null));
+  }
+  window.markersOvercrowded = [];
+}
+
+async function getOvercrowdedPlaces(heatMapDataAP) {
+  heatMapDataAP = heatMapDataAP.Eg
+  const greekDays = ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"];
+  const fileNames = [
+    "Arxaiologiko_mouseio", "Caravel_2", "Caravel", "Coffee_Island", "ELTA", "Faros", "Foititiki_Estia",
+    "Habit_cafe", "Jumbo", "Katastima_keramikon", "Molos_cafe", "NN_double_shot", "OMNIA_downtown",
+    "Parko_Eirinis", "Prytaneia", "Public", "Sinialo", "Sklavenitis_1", "sklavenitis_2", "Tofalos",
+    "Top_form_gym", "Vivliothiki_Panepistimiou", "Voi_Noi", "Xoriatiko", "ZARA"
+  ];
+  const currentDay = new Date().getDay();
+  const currentHour = new Date().getHours();
+  const currentGreekDay = greekDays[currentDay];
+
+  const fetchPromises = fileNames.map(async (name) => {
+    try {
+      const response = await fetch(`../curves/${name}.json`);
+      if (!response.ok) throw new Error(`Failed to fetch ${name}`);
+      const data = await response.json();
+
+      if (!data[currentGreekDay]) return null;
+
+      const normalLevel = data[currentGreekDay][currentHour];
+      const placeData = heatMapDataAP.find((place) => place.location_n === name);
+
+      if (placeData && placeData.weight > normalLevel) {
+        return { 
+          name, 
+          currentLevel: placeData.weight, 
+          normalLevel, 
+          ratio: placeData.weight / normalLevel, // Calculate the overcrowding ratio
+          lat: placeData.location.lat(), 
+          lng: placeData.location.lng() 
+        };
+      }
+    } catch (error) {
+      console.error(`Error fetching ${name}:`, error);
+    }
+    return null;
+  });
+
+  const results = await Promise.all(fetchPromises);
+  
+  // Filter out null values and sort by the highest overcrowding ratio
+  return results.filter(Boolean).sort((a, b) => b.ratio - a.ratio);
+}
+
+
 // INITIALIZE THE MAP AND ITS CONTROLS
 async function initMap() {
   //// Initialize the map
@@ -1067,13 +1135,54 @@ async function initMap() {
   
     heatmapAQ.set("gradient", gradient);
 
-    
+    heatmapAQ.set("radius", 30);
 
+
+    
+  
+  map.addListener("zoom_changed", () => {
+    // console.log("zoom changed", map.getZoom());
+    changeRadius(map.getZoom());
+  });
+
+  
+  
+  window.overcrowdedPlaces = await getOvercrowdedPlaces(heatMapDataAP);
+  // console.log("overcrowdedPlaces", overcrowdedPlaces.length);
+
+  clearMarkersOvercrowded();
+  window.overcrowdedPlaces.forEach((place) => {
+    const marker = new AdvancedMarkerElement({
+      position: { lat: place.lat, lng: place.lng },
+      map: map,
+      title: `<strong>${place.name}</strong><br><span style="color: red;">Current Level: ${place.currentLevel|0}</span><br><span style="color: green;">Normal Level: ${place.normalLevel|0}</span>`,
+      content: new PinElement({
+        glyph: "👥",
+        scale: 0.7,
+      }).element,
+      gmpDraggable: false,
+    });
+  
+    marker.addListener("click", ({ docEvent, latLng }) => {
+      infoWindow.close();
+      infoWindow.setContent(marker.title);
+      infoWindow.open(marker.map, marker);
+    });
+  
+    window.markersOvercrowded.push(marker);
+  });
+
+    
     
 
   if (userRole === "citizen") {
     // heatmapAP.setMap(null);
     heatmapAQ.setMap(null);
+
+    // heatMapDataAP.forEach((element) => {
+    //   console.log("element", element);
+    // });
+    
     const bounds = new google.maps.LatLngBounds();
 
     //// MARKERS FOR DIRECTIONS
@@ -1292,10 +1401,7 @@ async function initMap() {
       selectedArrivalDate = arrivalDateElement.value;
     });
 
-    map.addListener("zoom_changed", () => {
-      // console.log("zoom changed", map.getZoom());
-      changeRadius(map.getZoom());
-    });
+
 
     // Listener for the slider
     // console.log("intermediateDates", intermediateDates);
@@ -1330,6 +1436,30 @@ async function initMap() {
           heatMapDataAP.push(element);
         });
       }
+
+      window.overcrowdedPlaces = await getOvercrowdedPlaces(heatMapDataAP);
+      // console.log("overcrowdedPlaces", overcrowdedPlaces.length);
+      clearMarkersOvercrowded();
+      window.overcrowdedPlaces.forEach((place) => {
+        const marker = new AdvancedMarkerElement({
+          position: { lat: place.lat, lng: place.lng },
+          map: map,
+          title: `<strong>${place.name}</strong><br><span style="color: red;">Current Level: ${place.currentLevel|0}</span><br><span style="color: green;">Normal Level: ${place.normalLevel|0}</span>`,
+          content: new PinElement({
+            glyph: "👥",
+            scale: 0.7,
+          }).element,
+          gmpDraggable: false,
+        });
+      
+        marker.addListener("click", ({ docEvent, latLng }) => {
+          infoWindow.close();
+          infoWindow.setContent(marker.title);
+          infoWindow.open(marker.map, marker);
+        });
+      
+        window.markersOvercrowded.push(marker);
+      });
       
       
 
