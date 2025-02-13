@@ -1179,9 +1179,6 @@ async function initMap() {
     // heatmapAP.setMap(null);
     heatmapAQ.setMap(null);
 
-    // heatMapDataAP.forEach((element) => {
-    //   console.log("element", element);
-    // });
     
     const bounds = new google.maps.LatLngBounds();
 
@@ -1333,6 +1330,9 @@ async function initMap() {
     var departureDateElement = document.getElementById("departureDate");
     var arrivalDateElement = document.getElementById("arrivalDate");
 
+    var mapContainer = document.getElementById("map");
+    var grafanaContainer = document.getElementById("grafanaContainer");
+
     // If the URL does not contain an event parameter, hide both heatmaps
     if (!event) {
       console.log("url does not contain event");
@@ -1370,6 +1370,9 @@ async function initMap() {
         heatmapAQ.setMap(null);
         heatmapAP.setMap(map);
         apSwitch.checked = true;
+        mapContainer.style.width = "70%";
+        // Show the Charts
+        grafanaContainer.style.display = "flex";
       }
 
       // If the URL contains an event indicating the AirQualityButtonClicked event toggle the heatmapAQ and hide the heatmapAP
@@ -1379,6 +1382,9 @@ async function initMap() {
         heatmapAP.setMap(null);
         heatmapAQ.setMap(map);
         aqSwitch.checked = true;
+        mapContainer.style.width = "70%";
+        // Show the Charts
+        grafanaContainer.style.display = "flex";
 
         
       }
@@ -1546,9 +1552,8 @@ async function initMap() {
       .addEventListener("click", toggleAirQualityAll);
     
     var monitoringButton = document.getElementById("monitoringButton");
-    var analyticsButton = document.getElementById("analyticsButton");
-    var mapContainer = document.getElementById("map");
-    var grafanaContainer = document.getElementById("grafanaContainer");
+    // var analyticsButton = document.getElementById("analyticsButton");
+    
     var areaInput = document.getElementById("areaInput");
 
     const options = {
@@ -1571,7 +1576,7 @@ async function initMap() {
       // Show the top right controls
       topRightControls.style.display = "block";
 
-      // Hide the Grafana Dashboard
+      // Show the Charts
       grafanaContainer.style.display = "flex";
 
     }

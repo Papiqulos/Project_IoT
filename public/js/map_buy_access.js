@@ -109,12 +109,12 @@ async function initMap() {
 
   });   
 
-  analyticsButton.addEventListener("click", async function () {
-        console.log("Analytics Button Clicked1");
+  // analyticsButton.addEventListener("click", async function () {
+  //       console.log("Analytics Button Clicked1");
         
-        window.location.href = "/home?event=AnalyticsButtonClicked";
+  //       window.location.href = "/home?event=AnalyticsButtonClicked";
         
-  });
+  // });
 }
 
 
