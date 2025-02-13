@@ -374,10 +374,10 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: start;
 
 
-  width: 30%;
+  width: 90%;
   height: auto;
   max-height: 700px;
   max-width: 100%;
@@ -392,6 +392,19 @@ a {
   scrollbar-width: thin;
   scrollbar-color: #3c4fe0 transparent;
   
+}
+
+/* #grafanaContainer:first-child{
+  padding-top: 200px;
+} */
+
+.graph-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  width: 30%;
+  height: 100%;
 }
 
 /* THE MAP */

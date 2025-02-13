@@ -1,32 +1,13 @@
 
 <div class="monitoring-analytics">
-    <div id="grafanaContainer" style="display: none;">
-        <div style="width: 70%;"><canvas id="chart"></canvas></div>
-        <script type="module" src="/js/data_charts.js"></script>
-        {{!-- {{ness.name "Caravel"}}
+    <div class="graph-container">
+        <div id="grafanaContainer" style="display: none;">
             
+            <div class="charts-title">Your Sensor Readings</div>
+            <div style="width: 90%;" id="chart"></div>
+            <script type="module" src="/js/data_charts.js"></script>
             
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/aecr497nqky68c/caravel?from=1739265470719&to=1739287070719&timezone=browser&orgId=2&theme=light&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/aecr497nqky68c/caravel?from=1739265903500&to=1739287503500&timezone=browser&orgId=2&theme=light&panelId=2&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-        
-
-        
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/aecr497nqky68c/caravel?from=1739265903500&to=1739287503500&timezone=browser&orgId=2&theme=light&panelId=3&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/aecr497nqky68c/caravel?from=1739265903500&to=1739287503500&timezone=browser&orgId=2&theme=light&panelId=4&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            
-        {{/if_eq}}
-
-        {{#if_eq business.name "University of Patras"}}
-            
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/eecr8avpt1edcf/datacrowd-uni?from=1739279571979&to=1739301171979&timezone=browser&orgId=2&theme=light&panelId=4&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/eecr8avpt1edcf/datacrowd-uni?from=1739279571979&to=1739301171979&timezone=browser&orgId=2&theme=light&panelId=3&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-        
-
-        
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/eecr8avpt1edcf/datacrowd-uni?from=1739279710411&to=1739301310411&timezone=browser&orgId=2&theme=light&panelId=2&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            <iframe src="https://labserver.sense-campus.gr:8087/d-solo/eecr8avpt1edcf/datacrowd-uni?from=1739279710411&to=1739301310411&timezone=browser&orgId=2&theme=light&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-            
-        {{/if_eq}} --}}
+        </div>
     </div>
     <div id="map"></div>
 </div>
