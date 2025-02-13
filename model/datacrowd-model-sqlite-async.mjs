@@ -436,6 +436,11 @@ export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15
 
 export let getInfluxDataOfBusiness = async function (businessId, start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
     try {
+        if (businessId == 13) {
+            const dataAP = await getInfluxDataAccessPointsAll(start, stop);
+            const dataAQ = await getInfluxDataAirQualityAll(start, stop);
+            return {airQuality: dataAQ, accessPoints: dataAP};
+        }
         const sources = await getBusinessSourcesFromBusinessId(businessId);
         const dataAP = [];
         const dataAQCo2 = [];
