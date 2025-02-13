@@ -11,6 +11,8 @@ const url = process.env.INFLUXDB_URL;
 const token = process.env.INFLUX_TOKEN1;
 const org = process.env.INFLUXDB_ORG;
 const bucket = "datacrowd";
+let selectedStartGlobal = "2025-02-10T17:36:00.000Z";
+let selectedStopGlobal = "2025-02-10T18:42:00.000Z";
 
 let queryApi;
 // Connect to the InfluxDB
@@ -262,7 +264,7 @@ export let getDataSourceFromLocationN = async function (location_n){
 
 // Get the data from InfluxDB
 // Air Quality for a specific location within a time frame
-export let getInfluxDataAirQuality = async function (location_n = "ELTA", start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+export let getInfluxDataAirQuality = async function (location_n = "ELTA", start = selectedStartGlobal, stop= selectedStopGlobal){
     try {
         const dataSource = await getDataSourceFromLocationN(location_n);
         const fluxQuery = `from(bucket: "${bucket}")
@@ -290,7 +292,7 @@ export let getInfluxDataAirQuality = async function (location_n = "ELTA", start 
 }
 
 // Access Points for a specific location within a time frame
-export let getInfluxDataAccessPoints = async function (location_n = "Stroumpio", start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+export let getInfluxDataAccessPoints = async function (location_n = "Stroumpio", start = selectedStartGlobal, stop= selectedStopGlobal){
     try {
         const dataSource = await getDataSourceFromLocationN(location_n);
         const fluxQuery = `from(bucket: "${bucket}")
@@ -321,7 +323,7 @@ export let getInfluxDataAccessPoints = async function (location_n = "Stroumpio",
 }
 
 // Air Quality for all locations within a time frame
-export let getInfluxDataAirQualityAll = async function (start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+export let getInfluxDataAirQualityAll = async function (start = selectedStartGlobal, stop= selectedStopGlobal){
     try {
         
         const fluxQueryCo2 = `from(bucket: "${bucket}")
@@ -400,7 +402,7 @@ export let getInfluxDataAirQualityAll = async function (start = "2025-02-10T15:3
 }
 
 // Access Points for all locations within a time frame
-export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+export let getInfluxDataAccessPointsAll = async function (start = selectedStartGlobal, stop= selectedStopGlobal){
     try {
         
         const fluxQuery = `from(bucket: "${bucket}")
@@ -434,7 +436,7 @@ export let getInfluxDataAccessPointsAll = async function (start = "2025-02-10T15
     }
 }
 
-export let getInfluxDataOfBusiness = async function (businessId, start = "2025-02-10T15:36:00.000Z", stop= "2025-02-10T16:42:00.000Z"){
+export let getInfluxDataOfBusiness = async function (businessId, start = selectedStartGlobal, stop= selectedStopGlobal){
     try {
         const sources = await getBusinessSourcesFromBusinessId(businessId);
         const dataAP = [];

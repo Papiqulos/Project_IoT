@@ -38,8 +38,8 @@ export async function home(req, res, next) {
                     const stop = event.split("|")[2];
                     // console.log("Start: ", start);
                     // console.log("Stop: ", stop);
-                    const startn = new Date(new Date().getTime() + (-60) * 60 * 1000);
-                    const stopn = new Date(startn.getTime() + 60 * 60 * 1000);
+                    const startn = new Date(new Date().getTime() - 1* 60 * 60 * 1000);
+                    const stopn = new Date(new Date().getTime() - 0.1* 60 * 60 * 1000);
                     // console.log("Startn: ", startn);
                     // console.log("Stopn: ", stopn);
                     influxDataAccessPointsAll =  await model.getInfluxDataAccessPointsAll(start, stop);
@@ -78,8 +78,8 @@ export async function home(req, res, next) {
                     // console.log("Start: ", start);
                     // console.log("Stop: ", stop);
 
-                    const startn = new Date(new Date().getTime() + (-60) * 60 * 1000);
-                    const stopn = new Date(startn.getTime() + 60 * 60 * 1000);
+                    const startn = new Date(new Date().getTime() - 1* 60 * 60 * 1000);
+                    const stopn = new Date(new Date().getTime() - 0.1* 60 * 60 * 1000);
                     // console.log("Startn: ", startn);
                     // console.log("Stopn: ", stopn);
                     

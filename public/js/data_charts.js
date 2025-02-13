@@ -35,7 +35,7 @@ function createCharts(sensorData, flag) {
 
         // Prepare data for Chart.js
         
-        const labels = readings.map(r => new Date(new Date(r._time).getTime() - 2*60*60*1000  ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })); // Convert timestamp
+        const labels = readings.map(r => new Date(new Date(r._time).getTime() + 0*60*60*1000  ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })); // Convert timestamp
         let values;
         if (flag === "AP") {
              values = readings.map(r => r._value);
