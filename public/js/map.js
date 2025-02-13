@@ -12,8 +12,8 @@ let map,
   selectedDepartureDate,
   selectedArrivalDate,
   selectedMetric,
-  selectedStart = "2025-02-10T15:36:00.000Z",
-  selectedStop = "2025-02-10T16:42:00.000Z",
+  selectedStartGlobal = "2025-02-10T17:36:00.000Z",
+  selectedStopGlobal = "2025-02-10T18:42:00.000Z",
   markersAP = [],
   markersAQ = [];
   markersOvercrowded = [];
@@ -158,7 +158,7 @@ function normalizeValue(value, type){
 // ACCESS POINTS HEATMAPS
 // Get the points for the heatmap from the InfluxDB access points
 async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = influxData.airQuality.co2,
-                              startTime = selectedStart, stopTime = selectedStop) {
+                              startTime = selectedStartGlobal, stopTime = selectedStopGlobal) {
   // const accesPoints = influxData.accessPoints;
   // const dataCo2 = influxData.airQuality.co2;
   const compressedAccessPoints = {};
@@ -312,8 +312,8 @@ async function getHeatmapData(accesPoints = influxData.accessPoints, dataCo2 = i
 function toggleHeatmap() {
   if (selectedDepartureDate === undefined || selectedDepartureTime === undefined || selectedArrivalDate === undefined || selectedArrivalTime === undefined) {
     // Default values
-    selectedStart = "2025-02-10T15:36:00.000Z";
-    selectedStop = "2025-02-10T16:42:00.000Z";
+    selectedStart = selectedStartGlobal;
+    selectedStop = selectedStopGlobal;
   }
   else{
     // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
@@ -324,10 +324,14 @@ function toggleHeatmap() {
     var stopTime = document.getElementById("arrivalTime").value;
     var stopDate = document.getElementById("arrivalDate").value;
 
-    selectedStart = `${startDate}T${startTime}:00.000Z`;
-    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
+    selectedStartNotIso = `${startDate}T${startTime}:00.000Z`;
+    selectedStopNotIso = `${stopDate}T${stopTime}:00.000Z`;
     
-    console.log("selectedStart", selectedStart); 
+    console.log("selectedStart not iso", selectedStartNotIso); 
+    console.log("selectedStop not iso", selectedStopNotIso);
+    selectedStart = new Date(new Date(selectedStartNotIso).getTime() - 2 * 60*60*1000).toISOString();
+    selectedStop = new Date(new Date(selectedStopNotIso).getTime() - 2 * 60*60*1000).toISOString();
+    console.log("selectedStart", selectedStart);
     console.log("selectedStop", selectedStop);
     // Compare the selected dates to make sure the start date is before the stop date
     if (new Date(selectedStart) > new Date(selectedStop)) {
@@ -506,8 +510,8 @@ function toggleAirQualityAll() {
     || selectedArrivalTime === undefined 
     ) {
     // Default values for the selected time range
-    selectedStart = "2025-02-10T15:36:00.000Z";
-    selectedStop = "2025-02-10T16:42:00.000Z";
+    selectedStart = selectedStartGlobal;
+    selectedStop = selectedStopGlobal;
   }
   else{
     // selectedStart = `${selectedDepartureDate}T${selectedDepartureTime}:00.000Z`;
@@ -519,8 +523,11 @@ function toggleAirQualityAll() {
     var stopDate = document.getElementById("arrivalDate").value;
     
 
-    selectedStart = `${startDate}T${startTime}:00.000Z`;
-    selectedStop = `${stopDate}T${stopTime}:00.000Z`;
+    selectedStartNotIso = `${startDate}T${startTime}:00.000Z`;
+    selectedStopNotIso = `${stopDate}T${stopTime}:00.000Z`;
+
+    selectedStart = new Date(new Date(selectedStartNotIso).getTime() - 2 * 60*60*1000).toISOString();
+    selectedStop = new Date(new Date(selectedStopNotIso).getTime() - 2 * 60*60*1000).toISOString();
     // Compare the selected dates to make sure the start date is before the stop date
     if (new Date(selectedStart) > new Date(selectedStop)) {
       alert("Please select a valid time range");
@@ -1081,8 +1088,9 @@ async function initMap() {
     }
     // For the first time the page is loaded default to CO2
     else{
-      start = new Date(new Date().getTime() + 60 * 60 * 1000).toISOString();
-      stop = new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString();
+      console.log("No event found");
+      start = selectedStartGlobal;
+      stop = selectedStopGlobal;
       metric = "co2";
     }
     
@@ -1097,6 +1105,7 @@ async function initMap() {
     // Intermediate Dates based on selected time range
     const startObj = new Date(start);
     const stopObj = new Date(stop);
+    console.log(start);
     let intermediateDates;
     // Create a heatmap for the access points
     let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2, start, stop);
@@ -1337,6 +1346,8 @@ async function initMap() {
     var departureDateElement = document.getElementById("departureDate");
     var arrivalDateElement = document.getElementById("arrivalDate");
 
+  
+
     
 
     // If the URL does not contain an event parameter, hide both heatmaps
@@ -1346,29 +1357,40 @@ async function initMap() {
       clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(null);
-      departureTimeElement.value = selectedStart.split("T")[1].slice(0, 5);
-      departureDateElement.value = selectedStart.split("T")[0];
-      arrivalTimeElement.value = selectedStop.split("T")[1].slice(0, 5);
-      arrivalDateElement.value = selectedStop.split("T")[0];
-      const correctedStartObj = new Date(startObj.getTime() - 2 * 60 * 60 * 1000);  
-      const correctedStopObj = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000);
-      intermediateDates  = generateIntermediateDates(correctedStartObj, correctedStopObj);
+      const selectedStartGlobalNotIso = new Date(new Date(selectedStartGlobal).getTime()+2*60*60*1000).toISOString();
+      const selectedStopGlobalNotIso = new Date(new Date(selectedStopGlobal).getTime()+2*60*60*1000).toISOString();
+      departureTimeElement.value = selectedStartGlobalNotIso.split("T")[1].slice(0, 5);
+      departureDateElement.value = selectedStartGlobalNotIso.split("T")[0];
+      arrivalTimeElement.value = selectedStopGlobalNotIso.split("T")[1].slice(0, 5);
+      arrivalDateElement.value = selectedStopGlobalNotIso.split("T")[0];
+      // const correctedStartObj = new Date(startObj.getTime() - 2 * 60 * 60 * 1000);  
+      // const correctedStopObj = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000);
+
+      intermediateDates  = generateIntermediateDates(startObj, stopObj);
+      console.log("Intermediate dates created", intermediateDates[0], intermediateDates[intermediateDates.length - 1]);
     }
     else{
       console.log("url contains event");
       try{
+        
+        console.log("Getting intermediate for iso: ", startObj, stopObj);
         intermediateDates  = generateIntermediateDates(startObj, stopObj); 
-        departureTimeElement.value = new Date(startObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+        console.log("Intermediate dates created", intermediateDates[0], intermediateDates[intermediateDates.length - 1]);
+        console.log("startObj", startObj);
+        console.log("stopObj", stopObj);
+        departureTimeElement.value = new Date(startObj.getTime() + 0 * 60 * 60 * 1000).toTimeString().slice(0, 5);
         departureDateElement.value = startObj.toISOString().slice(0, 10);
-        arrivalTimeElement.value = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+        arrivalTimeElement.value = new Date(stopObj.getTime() + 0 * 60 * 60 * 1000).toTimeString().slice(0, 5);
         arrivalDateElement.value = stopObj.toISOString().slice(0, 10);
       }
       catch (error) {
-        intermediateDates = generateIntermediateDates(new Date(selectedStart), new Date(selectedStop));
-        departureTimeElement.value = selectedStart.split("T")[1].slice(0, 5);
-        departureDateElement.value = selectedStart.split("T")[0];
+        console.log("errorrrr", error);
+        intermediateDates = generateIntermediateDates(new Date(selectedStartGlobal), new Date(selectedStopGlobal));
+        departureTimeElement.value = selectedStartGlobal.split("T")[1].slice(0, 5);
+        departureDateElement.value = selectedStartGlobal.split("T")[0];
         arrivalTimeElement.value = selectedStop.split("T")[1].slice(0, 5);
         arrivalDateElement.value = selectedStop.split("T")[0];
+        throw new Error("Error getting intermediate dates");
       }
 
       // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
@@ -1438,8 +1460,13 @@ async function initMap() {
       const currentDate = new Date();
       const stopDate = new Date(stop);
       const startDate = new Date(start);
+      // console.log(start, stop);
+      // console.log("currentDate", currentDate);
+      // console.log("stopDate", stopDate);
+      // console.log("startDate", startDate);
       // console.log("slider value", slider.value);
       const intermediateDate = intermediateDates[slider.value-1];
+      console.log("intermediateDate", intermediateDate);
       // If the startDate in the future, change the text to Forecasting
       if (startDate > currentDate) {
         currentTimeTetxt.textContent = "Forecasting data for: ";
@@ -1448,7 +1475,8 @@ async function initMap() {
         currentTimeTetxt.textContent = "Showing data for: ";
       }
       currentTime.style.display = "flex";
-      currentTime.textContent = intermediateDate.toLocaleString();
+      currentTime.textContent = new Date(intermediateDate.getTime() + 0 * 60 * 60 * 1000).toLocaleString();
+      // console.log("intermediateDate iso", intermediateDate);
       // Filter the AP data for the intermediate date
       
       if (currentDate > stopDate) {
@@ -1459,7 +1487,6 @@ async function initMap() {
         
         // Convert the data to the heatmap format
         const newHeatMapDataAP = await getHeatmapData(newDataAP, newDataCo2, start, stop);
-        console.log(start, stop, intermediateDate);
         // console.log("HeatMapDataAP", heatMapDataAP);
         heatMapDataAP.clear();
         newHeatMapDataAP.forEach((element) => {
