@@ -35,7 +35,7 @@ let businessObj;
 if (userRole === "business"){
   const businessObjElement = document.getElementById("business-obj");
   businessObj = JSON.parse(businessObjElement.getAttribute("data-value"));
-  console.log("businessObj", businessObj);
+  // console.log("businessObj", businessObj);
 }
 let influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
 // console.log("influxData", influxData);
@@ -1097,7 +1097,7 @@ async function initMap() {
     // Intermediate Dates based on selected time range
     const startObj = new Date(start);
     const stopObj = new Date(stop);
-    const intermediateDates = generateIntermediateDates(startObj, stopObj);
+    let intermediateDates;
     // Create a heatmap for the access points
     let heatMapDataAP = await getHeatmapData(influxData.accessPoints, influxData.airQuality.co2, start, stop);
     heatMapDataAP = new google.maps.MVCArray(heatMapDataAP);
@@ -1340,17 +1340,29 @@ async function initMap() {
       clearMarkersAP();
       heatmapAP.setMap(null);
       heatmapAQ.setMap(null);
-      departureTimeElement.value = "15:36";
-      departureDateElement.value = "2025-02-10";
-      arrivalTimeElement.value = "16:42";
-      arrivalDateElement.value = "2025-02-10";
+      departureTimeElement.value = selectedStart.split("T")[1].slice(0, 5);
+      departureDateElement.value = selectedStart.split("T")[0];
+      arrivalTimeElement.value = selectedStop.split("T")[1].slice(0, 5);
+      arrivalDateElement.value = selectedStop.split("T")[0];
+      intermediateDates  = generateIntermediateDates(startObj, stopObj);
     }
     else{
       console.log("url contains event");
-      departureTimeElement.value = new Date(startObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
-      departureDateElement.value = startObj.toISOString().slice(0, 10);
-      arrivalTimeElement.value = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
-      arrivalDateElement.value = stopObj.toISOString().slice(0, 10);
+      try{
+        intermediateDates  = generateIntermediateDates(startObj, stopObj); 
+        departureTimeElement.value = new Date(startObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+        departureDateElement.value = startObj.toISOString().slice(0, 10);
+        arrivalTimeElement.value = new Date(stopObj.getTime() - 2 * 60 * 60 * 1000).toTimeString().slice(0, 5);
+        arrivalDateElement.value = stopObj.toISOString().slice(0, 10);
+      }
+      catch (error) {
+        intermediateDates = generateIntermediateDates(new Date(selectedStart), new Date(selectedStop));
+        departureTimeElement.value = selectedStart.split("T")[1].slice(0, 5);
+        departureDateElement.value = selectedStart.split("T")[0];
+        arrivalTimeElement.value = selectedStop.split("T")[1].slice(0, 5);
+        arrivalDateElement.value = selectedStop.split("T")[0];
+      }
+
       // If the URL contains an event indicating the HeatmapsButtonClicked event toggle the heatmapAP and hide the heatmapAQ
       if (event === "HeatmapsButtonClicked") {
         console.log("toggling AP and hiding AQ");
@@ -1406,14 +1418,25 @@ async function initMap() {
     // Listener for the slider
     // console.log("intermediateDates", intermediateDates);
     var slider = document.getElementById("myRange");
+    var currentTimeTetxt = document.getElementById("current-time-text");
+    var currentTime = document.getElementById("current-time");
     slider.addEventListener("input", async () => {
-      // console.log("slider value", slider.value);
-      const intermediateDate = intermediateDates[slider.value-1];
-      
-      // Filter the AP data for the intermediate date
       const currentDate = new Date();
       const stopDate = new Date(stop);
       const startDate = new Date(start);
+      // console.log("slider value", slider.value);
+      const intermediateDate = intermediateDates[slider.value-1];
+      // If the startDate in the future, change the text to Forecasting
+      if (startDate > currentDate) {
+        currentTimeTetxt.textContent = "Forecasting data for: ";
+      }
+      else{
+        currentTimeTetxt.textContent = "Showing data for: ";
+      }
+      currentTime.style.display = "flex";
+      currentTime.textContent = intermediateDate.toLocaleString();
+      // Filter the AP data for the intermediate date
+      
       if (currentDate > stopDate) {
         console.log("currentDate is greater than stopDate");
 
@@ -1522,26 +1545,27 @@ async function initMap() {
 
       // Show the map
       mapContainer.style.display = "block";
+      mapContainer.style.width = "70%";
 
       // Show the top right controls
       topRightControls.style.display = "block";
 
       // Hide the Grafana Dashboard
-      grafanaContainer.style.display = "none";
-
-    }
-    else if( event === "AnalyticsButtonClicked") {
-      console.log("Analytics Button Clicked")
-      // Hide the map
-      mapContainer.style.display = "none";
-
-      // Hide the top right controls
-      topRightControls.style.display = "none";
-
-      // Show the Grafana Dashboard
       grafanaContainer.style.display = "flex";
 
     }
+    // else if( event === "AnalyticsButtonClicked") {
+    //   console.log("Analytics Button Clicked")
+    //   // Hide the map
+    //   mapContainer.style.display = "none";
+
+    //   // Hide the top right controls
+    //   topRightControls.style.display = "none";
+
+    //   // Show the Grafana Dashboard
+    //   grafanaContainer.style.display = "flex";
+
+    // }
     
     // If you're already in the /home page
     monitoringButton.addEventListener("click", async () => {
@@ -1558,15 +1582,15 @@ async function initMap() {
 
     });
 
-    analyticsButton.addEventListener("click", async () => {
-      console.log("Analytics Button Clicked")
-      // Hide the map
-      mapContainer.style.display = "none";
+    // analyticsButton.addEventListener("click", async () => {
+    //   console.log("Analytics Button Clicked")
+    //   // Hide the map
+    //   mapContainer.style.display = "none";
 
-      // Show the Grafana Dashboard
-      grafanaContainer.style.display = "flex";
+    //   // Show the Grafana Dashboard
+    //   grafanaContainer.style.display = "flex";
 
-    });
+    // });
 
     
 
