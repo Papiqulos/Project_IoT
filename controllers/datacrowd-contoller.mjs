@@ -69,12 +69,43 @@ export async function home(req, res, next) {
                 }
             }
             else if (user.role === "business") {
-                business = await model.getBusinessByUsername(req.session.loggedUserId);
-                const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id);
-                influxDataAirQualityAll = influxDataOfBusiness.airQuality;
-                influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
-                console.log("AQ of business: ", influxDataAirQualityAll.length);
-                console.log("AP of business ", influxDataAccessPointsAll.length);
+
+                const event = req.query.event;
+                if (event){
+                    console.log("Event: ", event);
+                    const start = event.split("|")[1];
+                    const stop = event.split("|")[2];
+                    // console.log("Start: ", start);
+                    // console.log("Stop: ", stop);
+
+                    const startn = new Date(new Date().getTime() + (-60) * 60 * 1000);
+                    const stopn = new Date(startn.getTime() + 60 * 60 * 1000);
+                    // console.log("Startn: ", startn);
+                    // console.log("Stopn: ", stopn);
+                    
+                    business = await model.getBusinessByUsername(req.session.loggedUserId);
+                    const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id, start, stop);
+                    influxDataAirQualityAll = influxDataOfBusiness.airQuality;
+                    influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
+                    
+                    if (influxDataAirQualityAll.co2.length === 0 || influxDataAccessPointsAll.length === 0){
+                        console.log("adeioAQ");
+                        const futureData = await model.getInfluxDataOfBusiness(business.business_id, startn.toISOString(), stopn.toISOString());
+                        influxDataAirQualityAll = futureData.airQuality;
+                        influxDataAccessPointsAll = futureData.accessPoints;
+                    }
+                    console.log("AQ of business: ", influxDataAirQualityAll.co2.length);
+                    console.log("AP of business ", influxDataAccessPointsAll.length);
+
+                }
+                else{
+                    business = await model.getBusinessByUsername(req.session.loggedUserId);
+                    const influxDataOfBusiness = await model.getInfluxDataOfBusiness(business.business_id);
+                    influxDataAirQualityAll = influxDataOfBusiness.airQuality;
+                    influxDataAccessPointsAll = influxDataOfBusiness.accessPoints;
+                    console.log("AQ of business: ", influxDataAirQualityAll.length);
+                    console.log("AP of business ", influxDataAccessPointsAll.length);
+                }   
             }
             else if (user.role === "admin") {
                 console.log("Admin home");
