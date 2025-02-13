@@ -58,9 +58,12 @@
               </label>
           </div>
           {{> bottom_right_controls}}
-        {{/if_eq}}
           
-        <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+        {{/if_eq}}
+        
+        {{#if_eq user.role "citizen"}}
+          <button onclick="location.href='/logout'" class="btn">&#8635; Exit</button>
+        {{/if_eq}}
         <button id="infoButton" class="btn">✉️</button>
       </div>
 </div>

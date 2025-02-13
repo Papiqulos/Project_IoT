@@ -29,6 +29,12 @@ console.log("username: ", userId); // Outputs the Handlebars variable
 const userRoleElemenent = document.getElementById("user-role");
 const userRole = userRoleElemenent.getAttribute("data-value");
 console.log("user role: ", userRole); // Outputs the Handlebars variable
+let businessObj;
+if (userRole === "business"){
+  const businessObjElement = document.getElementById("business-obj");
+  businessObj = JSON.parse(businessObjElement.getAttribute("data-value"));
+  console.log("businessObj", businessObj);
+}
 let influxData = JSON.parse(document.getElementById("influxData").getAttribute("data-value"));
 // console.log("influxData", influxData);
 let egb = 0;
@@ -88,10 +94,17 @@ function getCurrentLocation() {
 // Center the map on the user's current location
 async function toggleCurrentLocation() {
   infoWindow = new google.maps.InfoWindow();
-  infoWindow.setPosition(window.currentLocation);
+  let location;
+  if (userRole === "citizen") {
+    location = window.currentLocation;
+  }
+  else if (userRole === "business") {
+    location = await getCoordsFromPlaceName(`${businessObj.address}`+ ", " + `${businessObj.city}`);
+  }
+  infoWindow.setPosition(location);
   infoWindow.setContent("Location found.");
   infoWindow.open(map);
-  map.setCenter(window.currentLocation);
+  map.setCenter(location);
 }
 
 // LIMIT API REQUESTS
@@ -1000,6 +1013,8 @@ async function initMap() {
     }
     // For the first time the page is loaded default to CO2
     else{
+      start = new Date(new Date().getTime() - 60 * 60 * 1000).toISOString();
+      stop = new Date().toISOString();
       metric = "co2";
     }
     
@@ -1023,19 +1038,6 @@ async function initMap() {
       map: map,
 
     });
-    // heatMapDataAP.forEach((element) => {
-    //   const marker = new AdvancedMarkerElement({
-    //     position: element.location,
-    //     map: map,
-    //     title: "Access Point",
-    //     content: new PinElement({
-    //       glyph: "📶",
-    //       scale: 1.5,
-    //     }).element,
-    //     gmpDraggable: false,
-    //   });
-    //   markersAP.push(marker);
-    // });
 
     let heatMapDataAQ = getAirQualityDataAll(metric, influxData.airQuality);
     heatMapDataAQ = new google.maps.MVCArray(heatMapDataAQ);
@@ -1064,6 +1066,146 @@ async function initMap() {
     ];
   
     heatmapAQ.set("gradient", gradient);
+
+    
+
+    
+
+  if (userRole === "citizen") {
+    // heatmapAP.setMap(null);
+    heatmapAQ.setMap(null);
+    const bounds = new google.maps.LatLngBounds();
+
+    //// MARKERS FOR DIRECTIONS
+    // Origin marker
+    const originMarker = new AdvancedMarkerElement({
+      position: window.currentLocation,
+      map: map,
+      title: "Origin",
+      content: new PinElement({
+        glyph: "🏠",
+        scale: 1.5,
+      }).element,
+      gmpDraggable: true,
+    });
+    
+    originMarker.addListener("dragend", async () => {
+      const pos = originMarker.position;
+      window.selectedOrigin = pos;
+      
+      // Reset the bounds first
+      // bounds = new google.maps.LatLngBounds();
+      bounds.extend(originMarker.position);
+      bounds.extend(destinationMarker.position);
+      map.fitBounds(bounds);
+      const addr = await getAddressFromCoordinates(pos);
+      var originInput = document.getElementById("origin_input");
+      originInput.value = addr;
+      
+      try{
+        const dist_bald = await google.maps.geometry.spherical.computeDistanceBetween(pos, center_bald);
+        // console.log("dist_bald", dist_bald);
+        if (dist_bald < 100){
+          // console.log("billaras");
+          // Change the glyph of the marker
+          originMarker.content = new PinElement({
+            glyph: "🧑🏼‍🦲",
+            scale: 1.5,
+          }).element;
+        }
+        else{
+          originMarker.content = new PinElement({
+            glyph: "🏠",
+            scale: 1.5,
+          }).element;
+        }
+      } catch (error) {
+        console.log("nothing to see here")
+      }
+    });
+    
+    // Destination marker
+    const destinationMarker = new AdvancedMarkerElement({
+      position: center_bald,
+      map: map,
+      title: "Destination",
+      content: new PinElement({
+        glyph: "🏢",
+        scale: 1.5,
+      }).element,
+      gmpDraggable: true,
+    });
+    
+    destinationMarker.addListener("dragend", async () => {
+      const pos = destinationMarker.position;
+      window.selectedDestination = pos;
+      // Reset the bounds first
+      // bounds = new google.maps.LatLngBounds();
+      bounds.extend(originMarker.position);
+      bounds.extend(destinationMarker.position);
+      map.fitBounds(bounds);
+      const addr = await getAddressFromCoordinates(pos);
+      var destinationInput = document.getElementById("destination_input");
+      destinationInput.value = addr;
+    });
+    
+    //// MAP CONTROLS
+    // TOP LEFT CONTROLS
+    const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container    
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
+
+    // Listeners for the search bar
+    const options = {
+      bounds: defaultBounds,
+      componentRestrictions: { country: "gr" },
+      fields: ["address_components", "geometry", "icon", "name"],
+      strictBounds: false,
+    };
+
+    // ORIGIN SEARCH BAR 
+    var originInput = document.getElementById("origin_input");
+    const autocompleteOrigin = new google.maps.places.Autocomplete(
+      originInput,
+      options
+    );
+    autocompleteOrigin.addListener("place_changed", () => {
+      const place = autocompleteOrigin.getPlace();
+      // console.log(place.geometry.location);
+      originMarker.position = place.geometry.location;
+      // selectedOrigin = place.geometry.location;
+      // console.log("place changed");
+    });
+
+    // DESTINATION SEARCH BAR 
+    var destinationInput = document.getElementById("destination_input");
+    const autocompleteDestination = new google.maps.places.Autocomplete(
+      destinationInput,
+      options
+    );
+    autocompleteDestination.addListener("place_changed", () => {
+      const place = autocompleteDestination.getPlace();
+      // console.log(place.geometry.location);
+      destinationMarker.position = place.geometry.location;
+      // selectedDestination = place.geometry.location;
+      // console.log("place changed");
+    });
+
+    // Listener for the "GET DIRECTIONS" button
+    // Get directions to a place
+    document
+      .getElementById("get_directions")
+      .addEventListener("click", showDirections);
+
+    
+    
+    
+
+
+    
+    
+    
+
+  } else if (userRole === "business") {
     // Listeners for the toggling of the heatmaps
     var apSwitch = document.getElementById("ap-switch");
     var aqSwitch = document.getElementById("aq-switch");
@@ -1075,20 +1217,6 @@ async function initMap() {
     aqSwitch.addEventListener("change", () => {
       heatmapAQ.setMap(aqSwitch.checked ? map : null);
     });
-
-    // heatMapDataAQ.forEach((element) => {
-    //   const marker = new AdvancedMarkerElement({
-    //     position: element.location,
-    //     map: map,
-    //     title: "Air Quality Sensor",
-    //     content: new PinElement({
-    //       glyph: "🔍",
-    //       scale: 1.5,
-    //     }).element,
-    //     gmpDraggable: false,
-    //   });
-    //   markersAQ.push(marker);
-    // });
 
     // Listeners for the start and stop date and time
     var departureTimeElement = document.getElementById("departureTime");
@@ -1232,143 +1360,6 @@ async function initMap() {
       heatMapDataAQ.push(element);
     });
     });
-
-    
-
-  if (userRole === "citizen") {
-    
-    const bounds = new google.maps.LatLngBounds();
-
-    //// MARKERS FOR DIRECTIONS
-    // Origin marker
-    const originMarker = new AdvancedMarkerElement({
-      position: window.currentLocation,
-      map: map,
-      title: "Origin",
-      content: new PinElement({
-        glyph: "🏠",
-        scale: 1.5,
-      }).element,
-      gmpDraggable: true,
-    });
-    
-    originMarker.addListener("dragend", async () => {
-      const pos = originMarker.position;
-      window.selectedOrigin = pos;
-      
-      // Reset the bounds first
-      // bounds = new google.maps.LatLngBounds();
-      bounds.extend(originMarker.position);
-      bounds.extend(destinationMarker.position);
-      map.fitBounds(bounds);
-      const addr = await getAddressFromCoordinates(pos);
-      var originInput = document.getElementById("origin_input");
-      originInput.value = addr;
-      
-      try{
-        const dist_bald = await google.maps.geometry.spherical.computeDistanceBetween(pos, center_bald);
-        // console.log("dist_bald", dist_bald);
-        if (dist_bald < 100){
-          // console.log("billaras");
-          // Change the glyph of the marker
-          originMarker.content = new PinElement({
-            glyph: "🧑🏼‍🦲",
-            scale: 1.5,
-          }).element;
-        }
-        else{
-          originMarker.content = new PinElement({
-            glyph: "🏠",
-            scale: 1.5,
-          }).element;
-        }
-      } catch (error) {
-        console.log("nothing to see here")
-      }
-    });
-    
-    // Destination marker
-    const destinationMarker = new AdvancedMarkerElement({
-      position: center_bald,
-      map: map,
-      title: "Destination",
-      content: new PinElement({
-        glyph: "🏢",
-        scale: 1.5,
-      }).element,
-      gmpDraggable: true,
-    });
-    
-    destinationMarker.addListener("dragend", async () => {
-      const pos = destinationMarker.position;
-      window.selectedDestination = pos;
-      // Reset the bounds first
-      // bounds = new google.maps.LatLngBounds();
-      bounds.extend(originMarker.position);
-      bounds.extend(destinationMarker.position);
-      map.fitBounds(bounds);
-      const addr = await getAddressFromCoordinates(pos);
-      var destinationInput = document.getElementById("destination_input");
-      destinationInput.value = addr;
-    });
-    
-    //// MAP CONTROLS
-    // TOP LEFT CONTROLS
-    const topLeftControls = document.getElementById("top-left-controls"); //get the top left controls container    
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(topLeftControls); //push the top left controls container to the top left of the map
-
-    // Listeners for the search bar
-    const options = {
-      bounds: defaultBounds,
-      componentRestrictions: { country: "gr" },
-      fields: ["address_components", "geometry", "icon", "name"],
-      strictBounds: false,
-    };
-
-    // ORIGIN SEARCH BAR 
-    var originInput = document.getElementById("origin_input");
-    const autocompleteOrigin = new google.maps.places.Autocomplete(
-      originInput,
-      options
-    );
-    autocompleteOrigin.addListener("place_changed", () => {
-      const place = autocompleteOrigin.getPlace();
-      // console.log(place.geometry.location);
-      originMarker.position = place.geometry.location;
-      // selectedOrigin = place.geometry.location;
-      // console.log("place changed");
-    });
-
-    // DESTINATION SEARCH BAR 
-    var destinationInput = document.getElementById("destination_input");
-    const autocompleteDestination = new google.maps.places.Autocomplete(
-      destinationInput,
-      options
-    );
-    autocompleteDestination.addListener("place_changed", () => {
-      const place = autocompleteDestination.getPlace();
-      // console.log(place.geometry.location);
-      destinationMarker.position = place.geometry.location;
-      // selectedDestination = place.geometry.location;
-      // console.log("place changed");
-    });
-
-    // Listener for the "GET DIRECTIONS" button
-    // Get directions to a place
-    document
-      .getElementById("get_directions")
-      .addEventListener("click", showDirections);
-
-    
-    
-    
-
-
-    
-    
-    
-
-  } else if (userRole === "business") {
     // Listener for the "HEATMAPS" button
     // Toggles the heatmap on the map
     document
