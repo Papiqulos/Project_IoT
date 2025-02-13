@@ -22,6 +22,7 @@ console.log("username: ", userId); // Outputs the Handlebars variable
 const userRoleElemenent = document.getElementById("user-role");
 const userRole = userRoleElemenent.getAttribute("data-value");
 const businessSources = JSON.parse(document.getElementById("businessSources").getAttribute("data-value"));
+console.log("business sources: ", businessSources); // Outputs the Handlebars variable
 const availableSources = JSON.parse(document.getElementById("availableSources").getAttribute("data-value"));
 console.log("user role: ", userRole); // Outputs the Handlebars variable
 
@@ -35,8 +36,8 @@ async function getGoogleApiKey() {
   }
 
 async function initMap() {
-    var monitoringButton = document.getElementById("monitoringButton");
-    var analyticsButton = document.getElementById("analyticsButton");
+    // var monitoringButton = document.getElementById("monitoringButton");
+    // var analyticsButton = document.getElementById("analyticsButton");
 
     const { Map, InfoWindow } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
@@ -62,6 +63,7 @@ async function initMap() {
     const bSmarker = new AdvancedMarkerElement({
         position: { lat: lat, lng: lng },
         map: map,
+        title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br><span>Current Reading: ${source._value}</span>`,
         content: new PinElement({
             background: "#3C4FE0",
             borderColor: "#3C4FE0",
@@ -73,7 +75,7 @@ async function initMap() {
     bSmarker.addListener("click", () => {
         infoWindow.close();
 
-        infoWindow.setContent(source.type+" "+source.location_n+" "+source.source_id);
+        infoWindow.setContent(bSmarker.title);
         infoWindow.open(bSmarker.map, bSmarker);
     });
 
@@ -87,6 +89,7 @@ async function initMap() {
         const aSmarker = new AdvancedMarkerElement({
             position: { lat: lat, lng: lng },
             map: map,
+            title: `<strong>${source.type}</strong><br><span>Location: ${source.location_n}</span><br><span>Current Reading: ${source._value}</span>`,
             content: new PinElement({
                 background: "#e20000",
                 borderColor: "#e20000",
@@ -97,17 +100,17 @@ async function initMap() {
         bounds.extend({ lat: lat, lng: lng });
         aSmarker.addListener("click", () => {
             infoWindow.close();
-            infoWindow.setContent(source.type+" "+source.location_n+" "+source.source_id);
+            infoWindow.setContent(aSmarker.title);
             infoWindow.open(aSmarker.map, aSmarker);
         });
  });
     map.fitBounds(bounds);
-  monitoringButton.addEventListener("click", async function () {
-    console.log("Monitoring Button Clicked1");
+  // monitoringButton.addEventListener("click", async function () {
+  //   console.log("Monitoring Button Clicked1");
     
-    window.location.href = "/home?event=MonitoringButtonClicked";
+  //   window.location.href = "/home?event=MonitoringButtonClicked";
 
-  });   
+  // });   
 
   // analyticsButton.addEventListener("click", async function () {
   //       console.log("Analytics Button Clicked1");

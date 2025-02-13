@@ -1368,6 +1368,7 @@ async function initMap() {
 
       intermediateDates  = generateIntermediateDates(startObj, stopObj);
       console.log("Intermediate dates created", intermediateDates[0], intermediateDates[intermediateDates.length - 1]);
+      grafanaContainer.style.display = "flex";
     }
     else{
       console.log("url contains event");
@@ -1591,7 +1592,7 @@ async function initMap() {
       .getElementById("air_quality_button")
       .addEventListener("click", toggleAirQualityAll);
     
-    var monitoringButton = document.getElementById("monitoringButton");
+    // var monitoringButton = document.getElementById("monitoringButton");
     // var analyticsButton = document.getElementById("analyticsButton");
     
     var areaInput = document.getElementById("areaInput");
@@ -1604,22 +1605,22 @@ async function initMap() {
     };
 
     // If you're coming from the /buy_access page
-    if (event === "MonitoringButtonClicked" || !event) {
-      heatmapAP.setMap(null);
-      heatmapAQ.setMap(null);
-      console.log("Monitoring Button Clicked")
+    // if (event === "MonitoringButtonClicked" || !event) {
+    //   heatmapAP.setMap(null);
+    //   heatmapAQ.setMap(null);
+    //   console.log("Monitoring Button Clicked")
 
-      // Show the map
-      mapContainer.style.display = "block";
-      mapContainer.style.width = "70%";
+    //   // Show the map
+    //   mapContainer.style.display = "block";
+    //   mapContainer.style.width = "70%";
 
-      // Show the top right controls
-      topRightControls.style.display = "block";
+    //   // Show the top right controls
+    //   topRightControls.style.display = "block";
 
-      // Show the Charts
-      grafanaContainer.style.display = "flex";
+    //   // Show the Charts
+    //   grafanaContainer.style.display = "flex";
 
-    }
+    // }
     // else if( event === "AnalyticsButtonClicked") {
     //   console.log("Analytics Button Clicked")
     //   // Hide the map
@@ -1634,20 +1635,20 @@ async function initMap() {
     // }
     
     // If you're already in the /home page
-    monitoringButton.addEventListener("click", async () => {
-      console.log("Monitoring Button Clicked")
+    // monitoringButton.addEventListener("click", async () => {
+    //   console.log("Monitoring Button Clicked")
 
-      // Show the map
-      mapContainer.style.display = "block";
-      mapContainer.style.width = "70%";
+    //   // Show the map
+    //   mapContainer.style.display = "block";
+    //   mapContainer.style.width = "70%";
 
-      // Show the top right controls
-      topRightControls.style.display = "block";
+    //   // Show the top right controls
+    //   topRightControls.style.display = "block";
 
-      // Hide the Grafana Dashboard
-      grafanaContainer.style.display = "flex";
+    //   // Hide the Grafana Dashboard
+    //   grafanaContainer.style.display = "flex";
 
-    });
+    // });
 
     // analyticsButton.addEventListener("click", async () => {
     //   console.log("Analytics Button Clicked")
