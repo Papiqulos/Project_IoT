@@ -1462,6 +1462,27 @@ async function initMap() {
 
       window.overcrowdedPlaces = await getOvercrowdedPlaces(heatMapDataAP);
       // console.log("overcrowdedPlaces", overcrowdedPlaces.length);
+      airQualityContainer = document.querySelector(".air-quality-container");
+      const OC_places = window.overcrowdedPlaces;
+      if (airQualityContainer) {
+        const averageLevels = getAverageMetricLevels();
+        const numberOfOvercrowdedPlaces = Math.min(window.overcrowdedPlaces.length, 5);
+        temp_html =`
+        <div class="dropdown-content">
+          <a>Levels: CO2: ${averageLevels.co2} p/m, Humidity: ${averageLevels.humidity} %, Temperature: ${averageLevels.temperature} °C</a>
+          <br>
+          `
+          if(OC_places.length > 0){
+            temp_html += `<a>Overcrowded locations (Current/Normal):</a>`;
+          }
+          for (let i = 0; i < numberOfOvercrowdedPlaces; i++) {
+            temp_html += `<a>${OC_places[i].name}: ${OC_places[i].currentLevel}/${OC_places[i].normalLevel}</a>`;
+          }
+          temp_html +=`</div>`;
+          airQualityContainer.innerHTML = temp_html;
+
+      }
+
       clearMarkersOvercrowded();
       window.overcrowdedPlaces.forEach((place) => {
         const marker = new AdvancedMarkerElement({
