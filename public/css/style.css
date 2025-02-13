@@ -298,6 +298,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  gap: 4px;
 }
 /* GENERAL BUTTON */
 
@@ -637,7 +638,7 @@ input[type="time"]:focus {
 }
 
 .slidecontainer {
-  padding: 20px 10px 10px 10px;
+  padding: 0 0 10px 0;
   /* margin: 10px; */
   width: 70%; /* Width of the outside container */
 }
@@ -761,11 +762,12 @@ input[type="time"]:focus {
   display: flex;
   flex-direction: column;
   /* justify-content: center; */
+  /* padding: 10px 0 10px 0; */
+  gap: 4px;
   align-items: center;
   background: #f6f6f6;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
   border-radius: 28px;
-  margin: 10px;
 }
 
 .general-button-container .btn{
@@ -781,6 +783,8 @@ input[type="time"]:focus {
   background: white;
   border-radius: 28px;
   box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+  padding: 4px;
+  gap: 4px;
 }
 
 .heatmap_controls .btn{
@@ -796,6 +800,7 @@ input[type="time"]:focus {
   background: white;
   border-radius: 28px;
   box-shadow: 0px 4px 10px rgba(0, 0, 255, 0.2);
+  padding: 4px;
 }
 
 .air-quality-container{
